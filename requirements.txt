@@ -1,0 +1,5 @@
+Flask>=3.0
+supabase
+PyJWT
+bcrypt
+python-dotenv>=1.0
