@@ -22,7 +22,22 @@ if not app.secret_key:
 # 1. Conexión a la Base de Datos Central (App Cargos)
 url: str = os.getenv("SUPABASE_URL")
 key: str = os.getenv("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
+# Creamos el cliente de Supabase de forma perezosa para evitar errores o bloqueos
+# durante la importación del módulo (útil en entornos de despliegue).
+supabase: Client | None = None
+
+def get_supabase() -> Client:
+    global supabase
+    if supabase is None:
+        try:
+            if not url or not key:
+                raise RuntimeError('SUPABASE_URL o SUPABASE_KEY no definidas')
+            supabase = create_client(url, key)
+        except Exception as e:
+            print(f"WARNING: no se pudo inicializar Supabase en import: {e}")
+            # Re-lanzar para que los handlers lo manejen si es necesario
+            raise
+    return supabase
 
 # 2. Configuración del Token
 JWT_SECRET = os.getenv("JWT_SECRET_KEY")
@@ -48,7 +63,8 @@ def login():
 
         try:
             # A. Buscamos al usuario en la tabla maestra
-            response = supabase.table('usuarios_sso').select("*").eq('email', email).execute()
+            sb = get_supabase()
+            response = sb.table('usuarios_sso').select("*").eq('email', email).execute()
             
             if not response.data:
                 flash('Usuario no encontrado', 'danger')
@@ -109,6 +125,11 @@ def dashboard():
     }
 
     return render_template('dashboard.html', user=user, links=links)
+
+
+@app.route('/health')
+def health():
+    return {'status': 'ok'}, 200
 
 @app.route('/logout')
 def logout():
