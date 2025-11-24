@@ -73,11 +73,7 @@ python app.py
 ```
 
 
-Terminal 1 - Backend (Flask): 
-cd "/Users/carlosalegria/Desktop/Aplicaciones Carlos Alegria/portal_sso" && /Users/carlosalegria/Desktop/Aplicaciones\ Carlos\ Alegria/portal_sso/.venv/bin/python app.py
 
-Terminal 2 - Frontend (React): 
-cd "/Users/carlosalegria/Desktop/Aplicaciones Carlos Alegria/portal_sso/frontend" && npm run dev
 
 Despliegue (opción para que la nueva SPA ocupe la URL antigua)
 1) Construir la app React y colocar los archivos de build en `frontend/dist` (Flask servirá desde ahí):
@@ -103,3 +99,17 @@ Deploy to Railway — minimal steps
 - Ensure the service has environment variables set: `SUPABASE_URL`, `SUPABASE_KEY`, `SECRET_KEY`, `JWT_SECRET_KEY`, `SUPERUSER_EMAIL` (if desired); Railway will provide a `PORT` env for the container — the container `start.sh` validates `PORT` and falls back to 5001 if not present.
 
 If you want, I can help prepare the new repository (create minimal README, branch, and instructions) — tell me when to proceed.
+
+Replacing the logo / favicon
+--------------------------------
+I added placeholder assets in `frontend/public` named `logo-somyl.svg` and `favicon.svg` so the login page shows a Somyl-branded header. To use the official Somyl logo and favicon:
+
+- Download the official logo and favicon files from https://www.somyl.com/ (or from your marketing assets).
+- Replace `frontend/public/logo-somyl.svg` and `frontend/public/favicon.svg` with the real files (keep the same filenames) and commit.
+- Rebuild the frontend (`cd frontend && npm run build`) so the updated assets are copied into `frontend/dist` and served by Flask in production.
+
+Terminal 1 - Backend (Flask): 
+cd "/Users/carlosalegria/Desktop/Aplicaciones Carlos Alegria/portal_sso" && /Users/carlosalegria/Desktop/Aplicaciones\ Carlos\ Alegria/portal_sso/.venv/bin/python app.py
+
+Terminal 2 - Frontend (React): 
+cd "/Users/carlosalegria/Desktop/Aplicaciones Carlos Alegria/portal_sso/frontend" && npm run dev
