@@ -43,9 +43,11 @@ function Login({ setUser }) {
         <div className="col-12 col-md-6 col-lg-4">
           <div className="card shadow">
             <div className="card-body p-5">
-              <div className="text-center mb-4">
-                <h2 className="fw-bold text-primary">Portal SSO</h2>
-                <p className="text-muted">Inicia sesión para acceder a tus aplicaciones</p>
+              <div className="text-center mb-3">
+                <img src="/logo-somyl.svg" alt="Somyl" style={{ maxWidth: 220, height: 'auto', marginBottom: 12 }} />
+                <div style={{height:10}} />
+                <h3 className="fw-bold" style={{color: '#0b7285'}}>Portal de accesos</h3>
+                <p className="text-muted small">Accede a tus aplicaciones con una sola cuenta</p>
               </div>
 
               {error && (
@@ -81,10 +83,17 @@ function Login({ setUser }) {
 
                 <button
                   type="submit"
-                  className="btn btn-primary w-100"
+                  className="btn btn-success w-100"
+                  style={{background: 'linear-gradient(90deg,#11999e,#0d6efd)', border: 'none', padding: '12px 16px', fontWeight: 600}}
                   disabled={loading}
                 >
-                  {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                  {loading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />Entrando...
+                    </>
+                  ) : (
+                    'Entrar'
+                  )}
                 </button>
               </form>
             </div>
