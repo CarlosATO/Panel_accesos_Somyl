@@ -89,12 +89,15 @@ function Dashboard({ user, setUser }) {
         <div className="container-fluid px-4">
           <a className="navbar-brand d-flex align-items-center text-white" href="#" style={{ fontWeight: '600', fontSize: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              {/* Prefer the full logo file if available, fallback to .ico; adjust width for responsive header */}
+              {/* Logo (fixed small size) */}
               <img
                 src="/logo-somyl.ico"
                 alt="Somyl"
                 style={{ width: 48, height: 'auto', display: 'block' }}
               />
+              {/* App name next to logo. Hide on very small screens and keep responsive sizing */}
+              <span style={{ fontWeight: 700, fontSize: '18px', color: 'rgba(255,255,255,0.95)', display: 'inline-block' }} className="d-none d-sm-inline">Portal Unificado</span>
+              <span style={{ fontWeight: 700, fontSize: '16px', color: 'rgba(255,255,255,0.95)', display: 'inline-block' }} className="d-inline d-sm-none">Portal</span>
             </div>
           </a>
           <div className="d-flex align-items-center gap-3">
