@@ -1,14 +1,6 @@
-/**
- * Servicio para gestión de usuarios SSO
- * Maneja todas las peticiones API relacionadas con usuarios
- */
-
 const API_BASE = '/api/admin/users'
 
 export const usuariosService = {
-  /**
-   * Obtener todos los usuarios
-   */
   async getAll() {
     const response = await fetch(API_BASE, {
       credentials: 'include'
@@ -20,9 +12,6 @@ export const usuariosService = {
     return data.users
   },
 
-  /**
-   * Crear un nuevo usuario
-   */
   async create(userData) {
     const response = await fetch(API_BASE, {
       method: 'POST',
@@ -41,9 +30,6 @@ export const usuariosService = {
     return await response.json()
   },
 
-  /**
-   * Actualizar un usuario existente
-   */
   async update(userId, userData) {
     const response = await fetch(`${API_BASE}/${userId}`, {
       method: 'PUT',
@@ -62,9 +48,6 @@ export const usuariosService = {
     return await response.json()
   },
 
-  /**
-   * Eliminar un usuario
-   */
   async delete(userId) {
     const response = await fetch(`${API_BASE}/${userId}`, {
       method: 'DELETE',
