@@ -33,4 +33,4 @@ COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
 EXPOSE 5001
 
 # Make sure Flask uses production server in entrypoint (gunicorn recommended)
-CMD ["gunicorn", "--bind", "0.0.0.0:5001", "app:app", "--workers", "3"]
+CMD ["sh", "-lc", "gunicorn --bind 0.0.0.0:${PORT:-5001} app:app --workers 3"]
