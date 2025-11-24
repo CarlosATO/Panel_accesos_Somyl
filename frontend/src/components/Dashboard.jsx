@@ -93,7 +93,7 @@ function Dashboard({ user, setUser }) {
               <img
                 src="/logo-somyl.ico"
                 alt="Somyl"
-                style={{ width: 160, height: 'auto', maxWidth: '45vw', display: 'block' }}
+                style={{ width: 48, height: 'auto', display: 'block' }}
               />
             </div>
           </a>
