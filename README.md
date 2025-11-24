@@ -1,3 +1,7 @@
+# Nota importante — SPA only
+
+This repository has been trimmed: the old server-side templates (login, dashboard and server-rendered admin pages) were removed. The React SPA under `frontend/` is now the canonical UI and communicates with Flask API endpoints under `/api`.
+
 # portal_sso
 
 Pequeño portal SSO para lanzar aplicaciones desde un menú.
@@ -58,7 +62,11 @@ flask --app app --debug run
 
 O
 
-```bash
+# Nota importante — SPA only
+
+This repository has been trimmed: the old server-side templates (login, dashboard and server-rendered admin pages) were removed. The React SPA under `frontend/` is now the canonical UI and communicates with Flask API endpoints under `/api`.
+
+If you want to push this cleaned project into a fresh repo for a clean Railway deployment, see the section "Deploy to Railway" below.
 python app.py
 # O usar otro puerto si 5000 está en uso:
 # PORT=5005 python app.py
@@ -85,3 +93,13 @@ npm run build
 2) Asegúrate de que el backend siga corriendo (Flask) — ahora `app.py` está configurado para servir `frontend/dist` y tiene una ruta "catch-all" que devuelve `index.html`.
 
 3) Resultado: las otras apps que redirigen a la URL antigua del panel (por ejemplo `https://portal.example.com` o `http://localhost:5001`) aterrizarán en la nueva SPA sin cambios en sus redirecciones, y la sesión se mantendrá (si la cookie/SSO es válida) porque la SPA consulta `/api/dashboard` con credenciales.
+
+---
+
+Deploy to Railway — minimal steps
+- Create a new repo in GitHub (e.g. `CarlosATO/Panel_accesos_Somyl`) and push this branch there.
+- In Railway create a new project and connect to the new GitHub repo.
+- In Railway service settings choose "Use Dockerfile" (root = repo root). This repo includes a multi-stage Dockerfile which builds the SPA and bundles the backend.
+- Ensure the service has environment variables set: `SUPABASE_URL`, `SUPABASE_KEY`, `SECRET_KEY`, `JWT_SECRET_KEY`, `SUPERUSER_EMAIL` (if desired); Railway will provide a `PORT` env for the container — the container `start.sh` validates `PORT` and falls back to 5001 if not present.
+
+If you want, I can help prepare the new repository (create minimal README, branch, and instructions) — tell me when to proceed.
