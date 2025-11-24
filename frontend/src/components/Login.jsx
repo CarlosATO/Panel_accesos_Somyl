@@ -39,28 +39,131 @@ function Login({ setUser }) {
 
   return (
     <div 
-      className="min-vh-100 d-flex align-items-center justify-content-center" 
+      className="min-vh-100 d-flex align-items-center justify-content-center position-relative" 
       style={{ 
-        background: '#f8fafc',
-        width: '100%'
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0d9488 100%)',
+        width: '100%',
+        overflow: 'hidden'
       }}
     >
-      <div className="col-11 col-sm-10 col-md-6 col-lg-5 col-xl-4 px-3">
+      {/* Fondo con patrón de fibra óptica */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `
+            radial-gradient(circle at 20% 80%, rgba(13, 148, 136, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(20, 184, 166, 0.25) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.2) 0%, transparent 30%),
+            radial-gradient(circle at 90% 90%, rgba(13, 148, 136, 0.35) 0%, transparent 40%)
+          `,
+          pointerEvents: 'none'
+        }}
+      />
+      
+      {/* Líneas decorativas tipo fibra óptica */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `
+            linear-gradient(45deg, transparent 48%, rgba(13, 148, 136, 0.1) 49%, rgba(13, 148, 136, 0.1) 51%, transparent 52%),
+            linear-gradient(-45deg, transparent 48%, rgba(20, 184, 166, 0.08) 49%, rgba(20, 184, 166, 0.08) 51%, transparent 52%)
+          `,
+          backgroundSize: '60px 60px',
+          pointerEvents: 'none'
+        }}
+      />
+
+      {/* Puntos brillantes simulando conexiones */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: '15%',
+          left: '10%',
+          width: '8px',
+          height: '8px',
+          background: 'radial-gradient(circle, #14b8a6 0%, transparent 70%)',
+          borderRadius: '50%',
+          boxShadow: '0 0 20px 5px rgba(20, 184, 166, 0.5)',
+          animation: 'pulse 3s infinite'
+        }}
+      />
+      <div 
+        style={{
+          position: 'absolute',
+          top: '70%',
+          right: '15%',
+          width: '6px',
+          height: '6px',
+          background: 'radial-gradient(circle, #0d9488 0%, transparent 70%)',
+          borderRadius: '50%',
+          boxShadow: '0 0 15px 4px rgba(13, 148, 136, 0.6)',
+          animation: 'pulse 2.5s infinite 0.5s'
+        }}
+      />
+      <div 
+        style={{
+          position: 'absolute',
+          top: '30%',
+          right: '25%',
+          width: '5px',
+          height: '5px',
+          background: 'radial-gradient(circle, #06b6d4 0%, transparent 70%)',
+          borderRadius: '50%',
+          boxShadow: '0 0 12px 3px rgba(6, 182, 212, 0.5)',
+          animation: 'pulse 4s infinite 1s'
+        }}
+      />
+
+      <style>
+        {`
+          @keyframes pulse {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.3); }
+          }
+        `}
+      </style>
+
+      <div className="col-11 col-sm-10 col-md-6 col-lg-5 col-xl-4 px-3 position-relative" style={{ zIndex: 1 }}>
         <div 
           className="card border-0" 
           style={{ 
             borderRadius: '20px',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.08)',
-            overflow: 'hidden'
+            boxShadow: '0 25px 80px rgba(0, 0, 0, 0.4), 0 0 40px rgba(13, 148, 136, 0.15)',
+            overflow: 'hidden',
+            backdropFilter: 'blur(10px)',
+            background: 'rgba(255, 255, 255, 0.97)'
           }}
         >
           <div 
             style={{ 
-              background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)',
+              background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #0f766e 100%)',
               padding: '40px 40px 32px',
-              textAlign: 'center'
+              textAlign: 'center',
+              position: 'relative',
+              overflow: 'hidden'
             }}
           >
+            {/* Efecto de brillo en el header */}
+            <div 
+              style={{
+                position: 'absolute',
+                top: '-50%',
+                left: '-50%',
+                width: '200%',
+                height: '200%',
+                background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+                pointerEvents: 'none'
+              }}
+            />
+            
             <div 
               style={{ 
                 width: '72px',
@@ -71,27 +174,29 @@ function Login({ setUser }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto 20px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                padding: '12px'
+                boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
+                padding: '12px',
+                position: 'relative'
               }}
             >
-                      {/* Use user-provided icon if present. Prefer svg/png if available, otherwise fall back to ico. */}
-                      <img 
-                        src="/logo-somyl.ico" 
-                        alt="Somyl" 
-                        style={{ 
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'contain'
-                        }} 
-                      />
+              <img 
+                src="/logo-somyl.ico" 
+                alt="Somyl" 
+                style={{ 
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain'
+                }} 
+              />
             </div>
             <h2 
               className="fw-bold mb-2" 
               style={{ 
                 color: 'white',
                 fontSize: '28px',
-                letterSpacing: '-0.5px'
+                letterSpacing: '-0.5px',
+                textShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                position: 'relative'
               }}
             >
               Portal de Accesos
@@ -101,7 +206,8 @@ function Login({ setUser }) {
                 color: 'rgba(255, 255, 255, 0.9)',
                 fontSize: '15px',
                 margin: 0,
-                fontWeight: '400'
+                fontWeight: '400',
+                position: 'relative'
               }}
             >
               Somyl SA - Sistema Unificado
@@ -265,7 +371,7 @@ function Login({ setUser }) {
         <p 
           className="text-center mt-4"
           style={{ 
-            color: '#6b7280',
+            color: 'rgba(255, 255, 255, 0.7)',
             fontSize: '13px',
             fontWeight: '400'
           }}

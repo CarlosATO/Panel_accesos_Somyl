@@ -19,8 +19,6 @@ function Dashboard({ user, setUser }) {
           if (data.user) {
             setUser(data.user)
           }
-          console.log('User data:', data.user)
-          console.log('Is superuser:', data.user?.is_superuser)
         } else {
           navigate('/login')
         }
@@ -77,8 +75,8 @@ function Dashboard({ user, setUser }) {
     : apps.filter(app => app.category === selectedCategory)
 
   return (
-    <div className="min-vh-100" style={{ background: '#f8fafc' }}>
-      {/* Header moderno */}
+    <div className="min-vh-100 d-flex flex-column" style={{ background: '#f1f5f9' }}>
+      {/* Header */}
       <nav 
         className="navbar navbar-expand-lg shadow-sm" 
         style={{ 
@@ -89,15 +87,12 @@ function Dashboard({ user, setUser }) {
         <div className="container-fluid px-4">
           <a className="navbar-brand d-flex align-items-center text-white" href="#" style={{ fontWeight: '600', fontSize: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              {/* Logo (fixed small size) */}
               <img
                 src="/logo-somyl.ico"
                 alt="Somyl"
                 style={{ width: 48, height: 'auto', display: 'block' }}
               />
-              {/* App name next to logo. Hide on very small screens and keep responsive sizing */}
-              <span style={{ fontWeight: 700, fontSize: '18px', color: 'rgba(255,255,255,0.95)', display: 'inline-block' }} className="d-none d-sm-inline">Portal Unificado</span>
-              <span style={{ fontWeight: 700, fontSize: '16px', color: 'rgba(255,255,255,0.95)', display: 'inline-block' }} className="d-inline d-sm-none">Portal</span>
+              <span style={{ fontWeight: 700, fontSize: '18px', color: 'rgba(255,255,255,0.95)' }} className="d-none d-sm-inline">Portal Unificado</span>
             </div>
           </a>
           <div className="d-flex align-items-center gap-3">
@@ -122,82 +117,78 @@ function Dashboard({ user, setUser }) {
         </div>
       </nav>
 
-      <div className="d-flex">
-        {/* Sidebar elegante */}
+      <div className="d-flex flex-grow-1">
+        {/* Sidebar mejorado */}
         <div 
-          className="bg-white" 
+          className="bg-white d-none d-lg-block" 
           style={{ 
-            width: '260px', 
+            width: '280px', 
             minHeight: 'calc(100vh - 72px)',
-            borderRight: '1px solid #e5e7eb',
-            padding: '24px 0'
+            borderRight: '1px solid #e2e8f0',
+            display: 'flex',
+            flexDirection: 'column'
           }}
         >
-          <div className="px-3">
+          <div className="p-4 flex-grow-1">
             <div 
-              className="text-muted text-uppercase fw-bold mb-3" 
+              className="text-uppercase fw-bold mb-4" 
               style={{ 
-                letterSpacing: '0.8px',
+                letterSpacing: '1.2px',
                 fontSize: '11px',
-                paddingLeft: '12px'
+                color: '#94a3b8'
               }}
             >
-              CATEGORÍAS
+              Categorías
             </div>
             
-            {categories.map(cat => (
-              <div
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className="mb-2 p-3 rounded d-flex align-items-center"
-                style={{
-                  cursor: 'pointer',
-                  backgroundColor: selectedCategory === cat.id ? '#f0fdfa' : 'transparent',
-                  color: selectedCategory === cat.id ? '#0d9488' : '#6b7280',
-                  fontWeight: selectedCategory === cat.id ? '600' : '500',
-                  fontSize: '14px',
-                  transition: 'all 0.2s',
-                  border: selectedCategory === cat.id ? '1px solid #99f6e4' : '1px solid transparent'
-                }}
-                onMouseEnter={(e) => {
-                  if (selectedCategory !== cat.id) {
-                    e.currentTarget.style.backgroundColor = '#f9fafb'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (selectedCategory !== cat.id) {
-                    e.currentTarget.style.backgroundColor = 'transparent'
-                  }
-                }}
-              >
-                <i className={`bi ${cat.icon} me-3`} style={{ fontSize: '18px' }}></i>
-                {cat.name}
-              </div>
-            ))}
+            <div className="d-flex flex-column gap-2">
+              {categories.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className="btn text-start d-flex align-items-center gap-3"
+                  style={{
+                    backgroundColor: selectedCategory === cat.id ? '#f0fdfa' : 'transparent',
+                    color: selectedCategory === cat.id ? '#0d9488' : '#64748b',
+                    fontWeight: selectedCategory === cat.id ? '600' : '500',
+                    fontSize: '14px',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    border: selectedCategory === cat.id ? '1px solid #99f6e4' : '1px solid transparent',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <i className={`bi ${cat.icon}`} style={{ fontSize: '18px', width: '24px' }}></i>
+                  {cat.name}
+                </button>
+              ))}
+            </div>
 
             {user?.is_superuser && (
               <>
-                <hr className="my-4" style={{ opacity: '0.1' }} />
+                <hr className="my-4" style={{ borderColor: '#e2e8f0' }} />
                 <div 
-                  className="text-muted text-uppercase fw-bold mb-3" 
+                  className="text-uppercase fw-bold mb-4" 
                   style={{ 
-                    letterSpacing: '0.8px',
+                    letterSpacing: '1.2px',
                     fontSize: '11px',
-                    paddingLeft: '12px'
+                    color: '#94a3b8'
                   }}
                 >
-                  ADMINISTRACIÓN
+                  Administración
                 </div>
-                <div
+                <button
                   onClick={() => navigate('/admin')}
-                  className="mb-2 p-3 rounded d-flex align-items-center"
+                  className="btn text-start d-flex align-items-center gap-3 w-100"
                   style={{
-                    cursor: 'pointer',
                     color: '#0d9488',
                     fontWeight: '500',
                     fontSize: '14px',
-                    transition: 'all 0.2s',
-                    border: '1px solid transparent'
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    border: '1px solid transparent',
+                    transition: 'all 0.2s ease',
+                    background: 'transparent'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#f0fdfa'
@@ -208,26 +199,54 @@ function Dashboard({ user, setUser }) {
                     e.currentTarget.style.border = '1px solid transparent'
                   }}
                 >
-                  <i className="bi bi-people me-3" style={{ fontSize: '18px' }}></i>
+                  <i className="bi bi-people" style={{ fontSize: '18px', width: '24px' }}></i>
                   Usuarios SSO
-                </div>
+                </button>
               </>
             )}
+          </div>
+
+          {/* Footer del sidebar */}
+          <div className="p-4 border-top" style={{ borderColor: '#e2e8f0' }}>
+            <div className="d-flex align-items-center gap-3">
+              <div 
+                className="rounded-circle d-flex align-items-center justify-content-center"
+                style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)',
+                  color: 'white',
+                  fontSize: '16px',
+                  fontWeight: '600'
+                }}
+              >
+                {user.email?.charAt(0).toUpperCase()}
+              </div>
+              <div style={{ overflow: 'hidden' }}>
+                <div style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {user.email?.split('@')[0]}
+                </div>
+                <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                  {user.is_superuser ? 'Administrador' : 'Usuario'}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Contenido principal */}
-        <div className="flex-grow-1 p-4" style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div className="mb-4" style={{ padding: '0 8px' }}>
-            <h1 className="h2 mb-2" style={{ color: '#1f2937', fontWeight: '700' }}>
+        <div className="flex-grow-1 p-4 p-lg-5" style={{ maxWidth: '1400px' }}>
+          <div className="mb-5">
+            <h1 className="mb-2" style={{ color: '#0f172a', fontWeight: '700', fontSize: '28px' }}>
               Aplicaciones Empresariales
             </h1>
-            <p className="text-muted" style={{ fontSize: '15px' }}>
+            <p style={{ color: '#64748b', fontSize: '15px', margin: 0 }}>
               Accede a tus herramientas de trabajo de forma centralizada
             </p>
           </div>
 
-          <div className="row g-4" style={{ padding: '0 8px' }}>
+          {/* Grid de apps con altura fija */}
+          <div className="row g-4">
             {filteredApps.map(app => {
               const roleValue = user[`rol_${app.key}`]
               const hasAccess = roleValue === 'admin' || roleValue === 'true' || roleValue === true
@@ -235,115 +254,136 @@ function Dashboard({ user, setUser }) {
               const isDisabled = !hasAccess && !isMaintenance
 
               return (
-                <div key={app.key} className="col-xl-3 col-lg-4 col-md-6">
+                <div key={app.key} className="col-12 col-sm-6 col-xl-3">
                   <div 
-                    className={`card h-100 border-0 ${(isMaintenance || isDisabled) ? '' : 'shadow-sm'}`}
+                    className="card h-100 border-0"
                     style={{
-                      cursor: (isMaintenance || isDisabled) ? 'not-allowed' : 'pointer',
-                      pointerEvents: (isDisabled || isMaintenance) ? 'none' : 'auto',
                       borderRadius: '16px',
-                      transition: 'all 0.3s',
-                      opacity: (isMaintenance || isDisabled) ? '0.5' : '1',
-                      overflow: 'hidden'
+                      transition: 'all 0.3s ease',
+                      opacity: (isMaintenance || isDisabled) ? '0.6' : '1',
+                      overflow: 'hidden',
+                      boxShadow: (isMaintenance || isDisabled) ? 'none' : '0 4px 20px rgba(0, 0, 0, 0.08)',
+                      cursor: (isMaintenance || isDisabled) ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column'
                     }}
                     onMouseEnter={(e) => {
                       if (!isMaintenance && !isDisabled) {
-                        e.currentTarget.style.transform = 'translateY(-8px)'
-                        e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.12)'
+                        e.currentTarget.style.transform = 'translateY(-6px)'
+                        e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.12)'
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!isMaintenance && !isDisabled) {
                         e.currentTarget.style.transform = 'translateY(0)'
-                        e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)'
+                        e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.08)'
                       }
                     }}
                   >
-                    {/* Header colorido */}
+                    {/* Header con icono */}
                     <div 
                       style={{ 
-                        background: `linear-gradient(135deg, ${app.color} 0%, ${app.color}dd 100%)`,
-                        padding: '24px',
+                        background: `linear-gradient(135deg, ${app.color} 0%, ${app.color}cc 100%)`,
+                        padding: '28px',
                         textAlign: 'center'
                       }}
                     >
                       <div
                         className="rounded-circle d-flex align-items-center justify-content-center mx-auto"
                         style={{
-                          width: '70px',
-                          height: '70px',
-                          backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                          width: '64px',
+                          height: '64px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.2)',
                           color: 'white',
-                          fontSize: '32px',
-                          backdropFilter: 'blur(10px)'
+                          fontSize: '28px'
                         }}
                       >
                         <i className={`bi ${app.icon}`}></i>
                       </div>
                     </div>
 
-                    {/* Contenido */}
-                    <div className="card-body p-4">
-                      <h5 className="card-title mb-2" style={{ fontWeight: '600', color: '#1f2937', fontSize: '18px' }}>
+                    {/* Contenido con altura fija */}
+                    <div 
+                      className="card-body d-flex flex-column" 
+                      style={{ 
+                        padding: '24px',
+                        flex: '1 1 auto'
+                      }}
+                    >
+                      <h5 
+                        className="mb-2" 
+                        style={{ 
+                          fontWeight: '600', 
+                          color: '#0f172a', 
+                          fontSize: '17px' 
+                        }}
+                      >
                         {app.name}
                       </h5>
-                      <p className="card-text text-muted mb-4" style={{ fontSize: '14px', lineHeight: '1.5' }}>
+                      <p 
+                        className="mb-0" 
+                        style={{ 
+                          color: '#64748b', 
+                          fontSize: '14px', 
+                          lineHeight: '1.5',
+                          flex: '1 1 auto',
+                          minHeight: '42px'
+                        }}
+                      >
                         {app.description}
                       </p>
                       
-                      {isMaintenance ? (
-                        <div 
-                          className="badge w-100 py-2" 
-                          style={{ 
-                            backgroundColor: '#fef3c7',
-                            color: '#92400e',
-                            fontSize: '13px',
-                            fontWeight: '500',
-                            borderRadius: '8px'
-                          }}
-                        >
-                          <i className="bi bi-cone-striped me-1"></i>
-                          En Mantenimiento
-                        </div>
-                      ) : isDisabled ? (
-                        <button 
-                          className="btn w-100 py-2" 
-                          disabled
-                          style={{
-                            backgroundColor: '#f3f4f6',
-                            color: '#9ca3af',
-                            border: 'none',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            borderRadius: '8px'
-                          }}
-                        >
-                          <i className="bi bi-lock me-1"></i>
-                          Sin Acceso
-                        </button>
-                      ) : (
-                        <a 
-                          href={links[app.key]} 
-                          className="btn w-100 text-white py-2"
-                          style={{
-                            background: `linear-gradient(135deg, ${app.color} 0%, ${app.color}dd 100%)`,
-                            border: 'none',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            borderRadius: '8px',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.transform = 'scale(1.02)'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.transform = 'scale(1)'
-                          }}
-                        >
-                          Acceder
-                          <i className="bi bi-arrow-right ms-2"></i>
-                        </a>
-                      )}
+                      {/* Botón siempre al fondo */}
+                      <div style={{ marginTop: '20px' }}>
+                        {isMaintenance ? (
+                          <div 
+                            className="text-center py-2 px-3" 
+                            style={{ 
+                              backgroundColor: '#fef3c7',
+                              color: '#92400e',
+                              fontSize: '13px',
+                              fontWeight: '500',
+                              borderRadius: '10px',
+                              border: '1px solid #fde68a'
+                            }}
+                          >
+                            <i className="bi bi-cone-striped me-2"></i>
+                            En Mantenimiento
+                          </div>
+                        ) : isDisabled ? (
+                          <button 
+                            className="btn w-100 py-2" 
+                            disabled
+                            style={{
+                              backgroundColor: '#f1f5f9',
+                              color: '#94a3b8',
+                              border: 'none',
+                              fontSize: '14px',
+                              fontWeight: '500',
+                              borderRadius: '10px'
+                            }}
+                          >
+                            <i className="bi bi-lock me-2"></i>
+                            Sin Acceso
+                          </button>
+                        ) : (
+                          <a 
+                            href={links[app.key]} 
+                            className="btn w-100 text-white py-2 d-flex align-items-center justify-content-center gap-2"
+                            style={{
+                              background: `linear-gradient(135deg, ${app.color} 0%, ${app.color}dd 100%)`,
+                              border: 'none',
+                              fontSize: '14px',
+                              fontWeight: '600',
+                              borderRadius: '10px',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            Acceder
+                            <i className="bi bi-arrow-right"></i>
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -353,8 +393,8 @@ function Dashboard({ user, setUser }) {
 
           {filteredApps.length === 0 && (
             <div className="text-center py-5">
-              <i className="bi bi-inbox" style={{ fontSize: '64px', color: '#d1d5db' }}></i>
-              <p className="text-muted mt-3">No hay aplicaciones en esta categoría</p>
+              <i className="bi bi-inbox" style={{ fontSize: '64px', color: '#cbd5e1' }}></i>
+              <p className="text-muted mt-3 mb-0">No hay aplicaciones en esta categoría</p>
             </div>
           )}
         </div>
