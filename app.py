@@ -1,8 +1,6 @@
 import os
-import jwt
-import bcrypt
-import datetime
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory, abort
+# jwt/bcrypt/datetime moved to API blueprints (auth/usuarios). Keep app.py small.
+from flask import Flask, request, redirect, url_for, session, flash, jsonify, send_from_directory, abort
 from supabase import create_client, Client
 from dotenv import load_dotenv
 from flask_cors import CORS
@@ -46,13 +44,7 @@ def get_supabase() -> Client:
 app.config['SUPABASE_CLIENT'] = get_supabase()
 
 # 2. Configuración del Token
-JWT_SECRET = os.getenv("JWT_SECRET_KEY")
-if not JWT_SECRET:
-    JWT_SECRET = os.getenv('SECRET_KEY')
-if not JWT_SECRET:
-    import secrets
-    JWT_SECRET = secrets.token_urlsafe(32)
-    print('WARNING: JWT_SECRET_KEY no encontrada en .env — usando valor temporal (cambiar para producción)')
+# JWT signing is handled by the /api/auth blueprint (see routes/auth.py)
 
 @app.route('/')
 def index():
@@ -69,80 +61,14 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-
-        try:
-            # A. Buscamos al usuario en la tabla maestra
-            sb = get_supabase()
-            response = sb.table('usuarios_sso').select("*").eq('email', email).execute()
-            
-            if not response.data:
-                flash('Usuario no encontrado', 'danger')
-                return redirect(url_for('login'))
-
-            user = response.data[0]
-
-            # B. Verificamos la contraseña (asumiendo que usas bcrypt)
-            # Nota: El hash en la DB debe ser string, encodeamos a bytes para comparar
-            if bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
-                
-                # C. ¡Login Exitoso! Guardamos sesión LOCAL en el portal
-                session['user_email'] = user['email']
-                session['user_data'] = user # Guardamos roles para usarlos en el dashboard
-                return redirect(url_for('dashboard'))
-            else:
-                flash('Contraseña incorrecta', 'danger')
-
-        except Exception as e:
-            print(f"Error: {e}")
-            flash('Error de conexión', 'danger')
-
-    return render_template('login.html')
+    """Legacy route removed — SPA handles login via /api/login. Redirect to root so client-side router takes over."""
+    # The SPA should handle login; keep a safe redirect here for backwards compatibility
+    return redirect(url_for('index'))
 
 @app.route('/dashboard')
 def dashboard():
-    # Serve SPA's dashboard route so external apps that redirect to /dashboard
-    # land in the new React app (which will call /api/dashboard and create UI based on session).
-    index_file = os.path.join(app.static_folder or '', 'index.html')
-    if os.path.exists(index_file):
-        return send_from_directory(app.static_folder, 'index.html')
-
-    if 'user_email' not in session:
-        return redirect(url_for('login'))
-
-    user = session['user_data']
-
-    # D. Generamos el SUPER TOKEN (El Pasaporte)
-    # Este token expira en 8 horas y contiene los roles
-    payload = {
-        'sub': user['id'], # ID del usuario
-        'email': user['email'],
-        'roles': {
-            'ordenes': user['rol_ordenes'],
-            'fibra': user['rol_fibra'],
-            'flota': user['rol_flota'],
-            'herramientas': user['rol_herramientas']
-        },
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=8)
-    }
-    
-    # Firmamos el token con la LLAVE MAESTRA
-    token_sso = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
-    
-    # URLs de tus proyectos (AJUSTA ESTAS URLS A TUS PROYECTOS REALES)
-    # Nota: Les adjuntamos el token como parámetro GET
-    links = {
-        # EN PRODUCCIÓN (app.py del Portal)
-        # Apuntamos a los dominios reales + la ruta /sso/login
-        'ordenes': f"https://pagos.datix.cl/sso/login?token={token_sso}",
-        'fibra':   f"https://pro.datix.cl/sso/login?token={token_sso}",
-        'flota':   f"https://flota.datix.cl/sso/login?token={token_sso}",
-        'herramientas': f"https://herramientas.datix.cl/sso/login?token={token_sso}"
-    }
-
-    return render_template('dashboard.html', user=user, links=links)
+    """Legacy server-rendered dashboard removed — redirect to SPA root so client-side router handles the dashboard route."""
+    return redirect(url_for('index'))
 
 
 @app.route('/health')
@@ -151,175 +77,30 @@ def health():
 
 @app.route('/logout')
 def logout():
+    """Keep a simple logout redirect for compatibility; SPA uses POST /api/logout for API-based logouts."""
     session.clear()
-    return redirect(url_for('login'))
+    return redirect(url_for('index'))
 
 # Módulo de Administración de Usuarios SSO
 @app.route('/admin')
 def admin():
-    # Refresh user from DB to ensure we check the current is_superuser state
-    try:
-        sb = get_supabase()
-        db_user_resp = sb.table('usuarios_sso').select('*').eq('email', session.get('user_email')).execute()
-        current = db_user_resp.data[0] if db_user_resp.data else session.get('user_data')
-        session['user_data'] = current
-    except Exception:
-        current = session.get('user_data')
-
-    if not current or not current.get('is_superuser'):
-        flash('Acceso denegado: se requieren permisos de superusuario', 'danger')
-        return redirect(url_for('dashboard'))
-    
-    try:
-        sb = get_supabase()
-        response = sb.table('usuarios_sso').select("*").execute()
-        users = response.data
-    except Exception as e:
-        flash(f'Error al cargar usuarios: {e}', 'danger')
-        users = []
-    
-    return render_template('admin.html', users=users)
+    """Legacy admin page removed — admin UI is now in the React SPA at /admin. Redirect to SPA root."""
+    return redirect(url_for('index'))
 
 @app.route('/admin/create', methods=['GET', 'POST'])
 def create_user():
-    # Ensure we have the latest user from DB for permission check
-    try:
-        sb = get_supabase()
-        db_user_resp = sb.table('usuarios_sso').select('*').eq('email', session.get('user_email')).execute()
-        current = db_user_resp.data[0] if db_user_resp.data else session.get('user_data')
-        session['user_data'] = current
-    except Exception:
-        current = session.get('user_data')
-
-    if not current or not current.get('is_superuser'):
-        flash('Acceso denegado: se requieren permisos de superusuario', 'danger')
-        return redirect(url_for('dashboard'))
-    
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        rol_admin = request.form.get('rol_admin') == 'on'
-        rol_ordenes = request.form.get('rol_ordenes') == 'on'
-        rol_fibra = request.form.get('rol_fibra') == 'on'
-        rol_flota = request.form.get('rol_flota') == 'on'
-        rol_herramientas = request.form.get('rol_herramientas') == 'on'
-        
-        if not email or not password:
-            flash('Email y contraseña son obligatorios', 'danger')
-            return redirect(url_for('create_user'))
-        
-        try:
-            sb = get_supabase()
-            # Verificar si el usuario ya existe
-            existing = sb.table('usuarios_sso').select("*").eq('email', email).execute()
-            if existing.data:
-                flash('Usuario ya existe', 'danger')
-                return redirect(url_for('create_user'))
-            
-            # Hash de la contraseña
-            password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            
-            # Insertar nuevo usuario
-            # Insertar 'is_superuser' igual al checkbox rol_admin para compatibilidad
-            sb.table('usuarios_sso').insert({
-                'email': email,
-                'password_hash': password_hash,
-                'is_superuser': rol_admin,
-                'rol_ordenes': rol_ordenes,
-                'rol_fibra': rol_fibra,
-                'rol_flota': rol_flota,
-                'rol_herramientas': rol_herramientas
-            }).execute()
-            
-            flash('Usuario creado exitosamente', 'success')
-            return redirect(url_for('admin'))
-        except Exception as e:
-            flash(f'Error al crear usuario: {e}', 'danger')
-    
-    return render_template('create_user.html')
+    """Legacy server-side create user page removed — use the SPA and the /api/admin endpoints instead."""
+    return redirect(url_for('index'))
 
 @app.route('/admin/edit/<user_id>', methods=['GET', 'POST'])
 def edit_user(user_id):
-    # Ensure latest permission check before editing
-    try:
-        sb = get_supabase()
-        db_user_resp = sb.table('usuarios_sso').select('*').eq('email', session.get('user_email')).execute()
-        current = db_user_resp.data[0] if db_user_resp.data else session.get('user_data')
-        session['user_data'] = current
-    except Exception:
-        current = session.get('user_data')
-
-    if not current or not current.get('is_superuser'):
-        flash('Acceso denegado: se requieren permisos de superusuario', 'danger')
-        return redirect(url_for('dashboard'))
-    
-    try:
-        sb = get_supabase()
-        if request.method == 'POST':
-            email = request.form.get('email')
-            password = request.form.get('password')
-            rol_admin = request.form.get('rol_admin') == 'on'
-            rol_ordenes = request.form.get('rol_ordenes') == 'on'
-            rol_fibra = request.form.get('rol_fibra') == 'on'
-            rol_flota = request.form.get('rol_flota') == 'on'
-            rol_herramientas = request.form.get('rol_herramientas') == 'on'
-            
-            # Prevent a user from revoking their own superuser flag here
-            if str(user_id) == str(current.get('id')) and not rol_admin:
-                flash('No puedes revocar tu propio rol de superusuario desde aquí', 'danger')
-                return redirect(url_for('edit_user', user_id=user_id))
-
-            update_data = {
-                'email': email,
-                'is_superuser': rol_admin,
-                'rol_ordenes': rol_ordenes,
-                'rol_fibra': rol_fibra,
-                'rol_flota': rol_flota,
-                'rol_herramientas': rol_herramientas
-            }
-            
-            if password:
-                update_data['password_hash'] = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            
-            sb.table('usuarios_sso').update(update_data).eq('id', user_id).execute()
-            flash('Usuario actualizado', 'success')
-            return redirect(url_for('admin'))
-        
-        # GET: cargar datos del usuario
-        response = sb.table('usuarios_sso').select("*").eq('id', user_id).execute()
-        if not response.data:
-            flash('Usuario no encontrado', 'danger')
-            return redirect(url_for('admin'))
-        user = response.data[0]
-    except Exception as e:
-        flash(f'Error: {e}', 'danger')
-        return redirect(url_for('admin'))
-    
-    return render_template('edit_user.html', user=user)
+    """Legacy server-side edit user page removed — SPA uses /api/admin endpoints for CRUD."""
+    return redirect(url_for('index'))
 
 @app.route('/admin/delete/<user_id>', methods=['POST'])
 def delete_user(user_id):
-    # Ensure latest permission check for delete
-    try:
-        sb = get_supabase()
-        db_user_resp = sb.table('usuarios_sso').select('*').eq('email', session.get('user_email')).execute()
-        current = db_user_resp.data[0] if db_user_resp.data else session.get('user_data')
-        session['user_data'] = current
-    except Exception:
-        current = session.get('user_data')
-
-    if not current or not current.get('is_superuser'):
-        flash('Acceso denegado: se requieren permisos de superusuario', 'danger')
-        return redirect(url_for('dashboard'))
-    
-    try:
-        sb = get_supabase()
-        sb.table('usuarios_sso').delete().eq('id', user_id).execute()
-        flash('Usuario eliminado', 'success')
-    except Exception as e:
-        flash(f'Error al eliminar: {e}', 'danger')
-    
-    return redirect(url_for('admin'))
+    """Legacy server-side delete user endpoint removed — use /api/admin users DELETE instead."""
+    return redirect(url_for('index'))
 
 
 # (removed) endpoint for toggling users from table view — toggling must be done via edit modal

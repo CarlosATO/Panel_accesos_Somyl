@@ -32,5 +32,6 @@ COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
 # Expose port
 EXPOSE 5001
 
-# Make sure Flask uses production server in entrypoint (gunicorn recommended)
-CMD ["sh", "-lc", "gunicorn --bind 0.0.0.0:${PORT:-5001} app:app --workers 3"]
+# Ensure start script is executable and use it as entrypoint — script validates $PORT
+RUN chmod +x /app/scripts/start.sh || true
+CMD ["/app/scripts/start.sh"]
