@@ -1,0 +1,35 @@
+# 🚀 Manual de Despliegue en Producción: Portal SSO
+
+Este documento detalla la configuración exacta para desplegar el Portal Central en **Railway** y conectarlo con los satélites.
+
+## 1. Archivos Críticos del Proyecto
+
+Asegúrate de que estos archivos existan en la raíz del repositorio antes de subirlo.
+
+### `Procfile`
+Este archivo le dice a Railway cómo arrancar el servidor Gunicorn.
+**Contenido:**
+```text
+web: gunicorn app:app
+
+requirements.txt 
+
+Debe incluir el servidor de producción y las librerías base.Contenido mínimo:PlaintextFlask
+gunicorn
+supabase
+PyJWT
+bcrypt
+python-dotenv
+app.py (Ajustes para Producción)Asegúrate de que el diccionario de links apunte a los dominios reales con https.Pythonlinks = {
+    'ordenes': f"[https://pagos.datix.cl/sso/login?token=](https://pagos.datix.cl/sso/login?token=){token_sso}",
+    'fibra':   f"[https://pro.datix.cl/sso/login?token=](https://pro.datix.cl/sso/login?token=){token_sso}",
+    'flota':   f"[https://flota.datix.cl/sso/login?token=](https://flota.datix.cl/sso/login?token=){token_sso}",
+    'herramientas': f"[https://herramientas.datix.cl/sso/login?token=](https://herramientas.datix.cl/sso/login?token=){token_sso}"
+}
+Nota: También asegúrate de tener la ruta @app.route('/health') definida para que Railway sepa que la app está viva.2. Configuración en RailwayVariables de EntornoConfigura estas variables en la pestaña Variables (sin comillas):VariableValor / DescripciónJWT_SECRET_KEYsso_super_secret_key_2025_#998877_secure_v1 (Debe ser idéntica en todos los proyectos)SECRET_KEYUna clave segura aleatoria para la sesión de FlaskSUPABASE_URLTu URL de Supabase (App Cargos)SUPABASE_KEYTu Service Role Key o Anon KeyPORT(No es necesario agregarla, Railway la inyecta sola)Configuración de Despliegue (Settings)Para evitar errores de despliegue ("Deploying..." infinito), configura esto en la pestaña Settings:Start Command: Déjalo VACÍO. (Railway leerá el Procfile automáticamente).Healthcheck Path: /health (Es vital para que el semáforo se ponga verde ✅).Healthcheck Timeout: 300 (Recomendado para dar margen de inicio).Dominios (Networking)Genera o conecta tu dominio personalizado (ej: portal.datix.cl).Asegúrate de configurar el registro CNAME en tu proveedor de DNS apuntando a la dirección que te da Railway.3. Troubleshooting (Solución de Problemas)Problema: El despliegue se queda pegado y luego falla.Solución: Revisa que el Healthcheck Path no esté vacío ni apunte a / (que redirige). Debe apuntar a una ruta que devuelva 200 OK (como /health).Problema: Error App crashed.Solución: Revisa los logs. Si dice "Module not found", te falta algo en requirements.txt. Si dice error de conexión, revisa SUPABASE_URL y KEY.Problema: Al hacer clic en una App, sale "404 Not Found" en el destino.Solución: El Portal está bien, pero el proyecto destino (ej: Flota) no tiene el Frontend (dist) bien configurado o no tiene la ruta /sso/login implementada.Documento generado tras la integración exitosa del Ecosistema Somyl - Noviembre 2025
+### ¿Qué hacemos ahora?
+1.  Crea este archivo en tu carpeta `portal_sso`.
+2.  Súbelo a GitHub.
+3.  Y con esto, el **Portal** queda blindado y documentado.
+
+Ahora sí, **¿estás listo para ir a por el último desafío? El Proyecto Herramientas.** 🛠️

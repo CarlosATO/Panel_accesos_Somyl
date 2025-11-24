@@ -224,7 +224,7 @@
         </div>
         <a href="/logout" class="btn-user">
             <i class="bi bi-person-circle"></i>
-            {{ user.nombre_completo }}
+            {{ user.email }}
             <i class="bi bi-box-arrow-right"></i>
         </a>
     </div>
@@ -250,6 +250,15 @@
                 Logística
             </div>
         </div>
+        {% if True %}  <!-- Temporal: mostrar siempre para probar -->
+        <div class="sidebar-section">
+            <div class="sidebar-title">ADMINISTRACIÓN</div>
+            <a href="{{ url_for('admin') }}" class="sidebar-item">
+                <i class="bi bi-people"></i>
+                Usuarios SSO
+            </a>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Main Content -->
