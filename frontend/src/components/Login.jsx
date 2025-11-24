@@ -270,7 +270,7 @@ function Login({ setUser }) {
             fontWeight: '400'
           }}
         >
-          © 2024 Somyl SA. Todos los derechos reservados.
+          © 2025 Somyl SA. Todos los derechos reservados.
         </p>
       </div>
     </div>
