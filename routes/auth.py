@@ -99,7 +99,8 @@ def dashboard():
             'ordenes': user['rol_ordenes'],
             'fibra': user['rol_fibra'],
             'flota': user['rol_flota'],
-            'herramientas': user['rol_herramientas']
+            'herramientas': user['rol_herramientas'],
+            'logistica': user['rol_logistica']
         },
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=8)
     }
@@ -109,7 +110,9 @@ def dashboard():
         'ordenes': f"https://pagos.datix.cl/sso/login?token={token_sso}",
         'fibra': f"https://pro.datix.cl/sso/login?token={token_sso}",
         'flota': f"https://flota.datix.cl/sso/login?token={token_sso}",
-        'herramientas': f"https://herramientas.datix.cl/sso/login?token={token_sso}"
+        'herramientas': f"https://herramientas.datix.cl/sso/login?token={token_sso}",
+        
+        'logistica': f"https://modulologisticasomyl-production.up.railway.app/?token={token_sso}"
     }
     
     return jsonify({'user': user, 'links': links})

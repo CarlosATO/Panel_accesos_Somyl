@@ -81,7 +81,8 @@ def crear_usuario():
             'rol_ordenes': roles.get('ordenes', 'false'),
             'rol_fibra': roles.get('fibra', 'false'),
             'rol_flota': roles.get('flota', 'false'),
-            'rol_herramientas': roles.get('herramientas', 'false')
+            'rol_herramientas': roles.get('herramientas', 'false'),
+            'rol_logistica': roles.get('logistica', 'false')
         }
         
         sb.table('usuarios_sso').insert(new_user).execute()
@@ -114,7 +115,8 @@ def actualizar_usuario(user_id):
             'rol_ordenes': roles.get('ordenes', 'false'),
             'rol_fibra': roles.get('fibra', 'false'),
             'rol_flota': roles.get('flota', 'false'),
-            'rol_herramientas': roles.get('herramientas', 'false')
+            'rol_herramientas': roles.get('herramientas', 'false'),
+            'rol_logistica': roles.get('logistica', 'false')
         }
         
         # Si se proporciona nueva contraseña, actualizarla

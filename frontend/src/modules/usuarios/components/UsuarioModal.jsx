@@ -10,7 +10,8 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
       ordenes: 'false',
       fibra: 'false',
       flota: 'false',
-      herramientas: 'false'
+      herramientas: 'false',
+      logistica: 'false'
     }
   })
   const [showPassword, setShowPassword] = useState(false)
@@ -25,7 +26,8 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
           ordenes: String(editingUser.rol_ordenes || 'false'),
           fibra: String(editingUser.rol_fibra || 'false'),
           flota: String(editingUser.rol_flota || 'false'),
-          herramientas: String(editingUser.rol_herramientas || 'false')
+          herramientas: String(editingUser.rol_herramientas || 'false'),
+          logistica: String(editingUser.rol_logistica || 'false')
         }
       })
     } else {
@@ -37,7 +39,8 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
           ordenes: 'false',
           fibra: 'false',
           flota: 'false',
-          herramientas: 'false'
+          herramientas: 'false',
+          logistica: 'false'
         }
       })
     }
@@ -63,6 +66,7 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
     { key: 'ordenes', name: 'Órdenes de Pago', icon: 'bi-receipt-cutoff', color: '#0d9488' },
     { key: 'fibra', name: 'Gestión Fibra', icon: 'bi-diagram-3', color: '#14b8a6' },
     { key: 'flota', name: 'Control Flota', icon: 'bi-truck', color: '#06b6d4' },
+    { key: 'logistica', name: 'Logística', icon: 'bi-box-seam', color: '#f59e0b' },
     { key: 'herramientas', name: 'Herramientas', icon: 'bi-tools', color: '#64748b' }
   ]
 

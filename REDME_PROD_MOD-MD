@@ -32,4 +32,3 @@ Nota: También asegúrate de tener la ruta @app.route('/health') definida para q
 2.  Súbelo a GitHub.
 3.  Y con esto, el **Portal** queda blindado y documentado.
 
-Ahora sí, **¿estás listo para ir a por el último desafío? El Proyecto Herramientas.** 🛠️

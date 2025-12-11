@@ -60,6 +60,16 @@ function Dashboard({ user, setUser }) {
     { key: 'ordenes', name: 'Órdenes de Pago', description: 'Gestión de pagos y finanzas', icon: 'bi-receipt-cutoff', color: '#0d9488', category: 'finance' },
     { key: 'fibra', name: 'Gestión Fibra', description: 'Control de despliegue', icon: 'bi-diagram-3', color: '#14b8a6', category: 'operations' },
     { key: 'flota', name: 'Control Flota', description: 'Vehículos y mantenimiento', icon: 'bi-truck', color: '#06b6d4', category: 'logistics' },
+    // 👇 AGREGA ESTE BLOQUE 👇
+    { 
+      key: 'logistica', 
+      name: 'Logística', 
+      description: 'Inventario y Stock de Proyectos', 
+      icon: 'bi-box-seam', 
+      color: '#f59e0b', 
+      category: 'logistics' 
+    },
+    // 👆 FIN DEL BLOQUE 👆
     { key: 'herramientas', name: 'Herramientas', description: 'Módulo en mantenimiento', icon: 'bi-cone-striped', color: '#64748b', maintenance: true, category: 'operations' }
   ]
 
