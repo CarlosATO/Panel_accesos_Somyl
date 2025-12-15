@@ -106,13 +106,18 @@ def dashboard():
     }
     token_sso = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
     
+    # 1. Leemos las variables. Si no existen, por seguridad usamos localhost
+    url_logistica = os.getenv("URL_LOGISTICA", "http://localhost:5160")
+    url_flota = os.getenv("URL_FLOTA", "http://localhost:5175")
+
     links = {
         'ordenes': f"https://pagos.datix.cl/sso/login?token={token_sso}",
         'fibra': f"https://pro.datix.cl/sso/login?token={token_sso}",
-        'flota': f"https://flota.datix.cl/sso/login?token={token_sso}",
         'herramientas': f"https://herramientas.datix.cl/sso/login?token={token_sso}",
         
-        'logistica': f"https://modulologisticasomyl-production.up.railway.app/?token={token_sso}"
+        # 2. Usamos las variables dinámicas para módulos locales
+        'flota': f"{url_flota}/?token={token_sso}",
+        'logistica': f"{url_logistica}/?token={token_sso}"
     }
     
     return jsonify({'user': user, 'links': links})

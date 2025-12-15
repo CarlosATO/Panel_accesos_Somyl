@@ -109,7 +109,7 @@ I added placeholder assets in `frontend/public` named `logo-somyl.svg` and `favi
 - Rebuild the frontend (`cd frontend && npm run build`) so the updated assets are copied into `frontend/dist` and served by Flask in production.
 
 Terminal 1 - Backend (Flask): 
-cd /Users/carlosalegria/Desktop/Aplicaciones Carlos Alegria/PORTAL_SOMYL_2026/portal_sso" && source .venv/bin/activate && python app.py
+cd "/Users/carlosalegria/Desktop/Aplicaciones Carlos Alegria/PORTAL_SOMYL_2026/portal_sso" && source .venv/bin/activate && python app.py
 
 Terminal 2 - Frontend (React): 
-cd /Users/carlosalegria/Desktop/Aplicaciones Carlos Alegria/PORTAL_SOMYL_2026/portal_sso/frontend" && npm run dev 
+cd "/Users/carlosalegria/Desktop/Aplicaciones Carlos Alegria/PORTAL_SOMYL_2026/portal_sso/frontend" && npm run dev
