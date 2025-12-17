@@ -116,8 +116,8 @@ def dashboard():
         'herramientas': f"https://herramientas.datix.cl/sso/login?token={token_sso}",
         
         # 2. Usamos las variables dinámicas para módulos locales
-        'flota': f"{url_flota}/?token={token_sso}",
-        'logistica': f"{url_logistica}/?token={token_sso}"
+        'flota': f"{url_flota}/sso/login?token={token_sso}",
+        'logistica': f"{url_logistica}/sso/login?token={token_sso}"
     }
     
     return jsonify({'user': user, 'links': links})
