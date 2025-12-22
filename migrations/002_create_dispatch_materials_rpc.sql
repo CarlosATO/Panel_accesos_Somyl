@@ -6,10 +6,10 @@ CREATE OR REPLACE FUNCTION dispatch_materials(
     p_project_id INTEGER,
     p_document_number TEXT,
     p_receiver_name TEXT,
-    p_receiver_rut TEXT DEFAULT '',
-    p_receiver_stage TEXT DEFAULT '',
     p_user_email TEXT,
-    p_items JSONB
+    p_items JSONB,
+    p_receiver_rut TEXT DEFAULT '',
+    p_receiver_stage TEXT DEFAULT ''
 )
 RETURNS VOID
 LANGUAGE plpgsql
