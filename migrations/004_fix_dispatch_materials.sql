@@ -64,31 +64,10 @@ BEGIN
                     item_record.value->>'sourceId';
             END IF;
 
-            -- Also update the general product stock
-            -- Try using a subquery approach
-            UPDATE products
-            SET current_stock = current_stock - (item_record.value->>'quantity')::INTEGER
-            FROM (SELECT (item_record.value->>'productId')::UUID as pid) as params
-            WHERE products.id = params.pid;
-
-            GET DIAGNOSTICS rows_affected = ROW_COUNT;
-            IF rows_affected = 0 THEN
-                RAISE EXCEPTION 'Product update failed for %',
-                    item_record.value->>'productId';
-            END IF;
+            -- NOTE: General product stock is updated by the frontend after RPC completion
 
         ELSE
-            -- Update general stock only
-            UPDATE products
-            SET current_stock = current_stock - (item_record.value->>'quantity')::INTEGER
-            FROM (SELECT (item_record.value->>'productId')::UUID as pid) as params
-            WHERE products.id = params.pid;
-
-            GET DIAGNOSTICS rows_affected = ROW_COUNT;
-            IF rows_affected = 0 THEN
-                RAISE EXCEPTION 'Product update failed for %',
-                    item_record.value->>'productId';
-            END IF;
+            -- NOTE: General product stock is updated by the frontend after RPC completion
         END IF;
     END LOOP;
 
