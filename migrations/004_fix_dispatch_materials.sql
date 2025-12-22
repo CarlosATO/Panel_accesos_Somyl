@@ -13,7 +13,6 @@ CREATE OR REPLACE FUNCTION dispatch_materials(
 )
 RETURNS VOID
 LANGUAGE plpgsql
-SECURITY DEFINER
 AS $$
 DECLARE
     item_record RECORD;
@@ -57,23 +56,24 @@ BEGIN
             -- Update specific rack location
             UPDATE product_locations
             SET quantity = quantity - (item_record.value->>'quantity')::INTEGER
-            WHERE id = (item_record.value->>'sourceId')::UUID
-              AND quantity >= (item_record.value->>'quantity')::INTEGER;
+            WHERE id = (item_record.value->>'sourceId')::UUID;
 
-            -- Check if update was successful
-            IF NOT FOUND THEN
-                RAISE EXCEPTION 'Insufficient stock in rack location % for product %',
-                    item_record.value->>'sourceId', item_record.value->>'productId';
+            GET DIAGNOSTICS rows_affected = ROW_COUNT;
+            IF rows_affected = 0 THEN
+                RAISE EXCEPTION 'Rack location % not found',
+                    item_record.value->>'sourceId';
             END IF;
 
             -- Also update the general product stock
+            -- Try using a subquery approach
             UPDATE products
             SET current_stock = current_stock - (item_record.value->>'quantity')::INTEGER
-            WHERE id = (item_record.value->>'productId')::UUID
-              AND current_stock >= (item_record.value->>'quantity')::INTEGER;
+            FROM (SELECT (item_record.value->>'productId')::UUID as pid) as params
+            WHERE products.id = params.pid;
 
-            IF NOT FOUND THEN
-                RAISE EXCEPTION 'Insufficient general stock for product %',
+            GET DIAGNOSTICS rows_affected = ROW_COUNT;
+            IF rows_affected = 0 THEN
+                RAISE EXCEPTION 'Product update failed for %',
                     item_record.value->>'productId';
             END IF;
 
@@ -81,11 +81,12 @@ BEGIN
             -- Update general stock only
             UPDATE products
             SET current_stock = current_stock - (item_record.value->>'quantity')::INTEGER
-            WHERE id = (item_record.value->>'productId')::UUID
-              AND current_stock >= (item_record.value->>'quantity')::INTEGER;
+            FROM (SELECT (item_record.value->>'productId')::UUID as pid) as params
+            WHERE products.id = params.pid;
 
-            IF NOT FOUND THEN
-                RAISE EXCEPTION 'Insufficient stock for product %',
+            GET DIAGNOSTICS rows_affected = ROW_COUNT;
+            IF rows_affected = 0 THEN
+                RAISE EXCEPTION 'Product update failed for %',
                     item_record.value->>'productId';
             END IF;
         END IF;
