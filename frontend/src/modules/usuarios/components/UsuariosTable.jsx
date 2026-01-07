@@ -21,7 +21,7 @@ function UsuariosTable({ users, currentUserId, onEdit, onDelete }) {
         </span>
       )
     }
-    if (role === 'true' || role === true) {
+    if (role === 'true' || role === true || role === 'usuario') {
       return (
         <span 
           className="badge"
@@ -149,6 +149,19 @@ function UsuariosTable({ users, currentUserId, onEdit, onDelete }) {
               Logística
             </th>
             <th 
+              className="text-uppercase text-center" 
+              style={{ 
+                padding: '16px 12px',
+                fontSize: '11px',
+                fontWeight: '700',
+                color: '#64748b',
+                letterSpacing: '0.5px',
+                background: '#f8fafc'
+              }}
+            >
+              Producción
+            </th>
+            <th 
               className="text-uppercase text-end" 
               style={{ 
                 padding: '16px 24px',
@@ -235,6 +248,9 @@ function UsuariosTable({ users, currentUserId, onEdit, onDelete }) {
               </td>
               <td className="text-center align-middle" style={{ padding: '16px 12px' }}>
                 {getRoleBadge(user.rol_logistica)}
+              </td>
+              <td className="text-center align-middle" style={{ padding: '16px 12px' }}>
+                {getRoleBadge(user.rol_produccion)}
               </td>
               <td className="text-end align-middle" style={{ padding: '16px 24px' }}>
                 <div className="d-flex justify-content-end gap-2">

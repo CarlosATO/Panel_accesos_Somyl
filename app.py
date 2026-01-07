@@ -8,13 +8,14 @@ from flask_cors import CORS
 # Importar blueprints
 from routes.usuarios import usuarios_bp
 from routes.auth import auth_bp
+from routes.proyectos import proyectos_bp
 
 load_dotenv()
 
 # Serve React build files from frontend/dist so the SPA can occupy the old portal URL
 static_dir = os.path.join(os.path.dirname(__file__), 'frontend', 'dist')
 app = Flask(__name__, static_folder=static_dir, template_folder='templates')
-CORS(app, supports_credentials=True, origins=['http://localhost:5173', 'http://localhost:5174'])
+CORS(app)
 
 # Asegura que exista una secret key para usar la sesión y mensajes flash.
 app.secret_key = os.getenv("SECRET_KEY")
@@ -109,6 +110,7 @@ def delete_user(user_id):
 # Registrar Blueprints (módulos separados)
 app.register_blueprint(auth_bp)
 app.register_blueprint(usuarios_bp)
+app.register_blueprint(proyectos_bp)
 
 
 # SPA catch-all: serve index.html for any non-API path so the new React app
