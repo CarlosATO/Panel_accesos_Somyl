@@ -1,0 +1,1446 @@
+diff --git a/.env.example b/.env.example
+new file mode 100644
+index 0000000..1901dc9
+--- /dev/null
++++ b/.env.example
+@@ -0,0 +1 @@
++# (El archivo .env.example fue creado por error y vaciado. Si necesitas un ejemplo, crea uno manualmente.)
+diff --git a/app.py b/app.py
+index 87e8a3c..b606fe9 100644
+--- a/app.py
++++ b/app.py
+@@ -8,14 +8,13 @@ from flask_cors import CORS
+ # Importar blueprints
+ from routes.usuarios import usuarios_bp
+ from routes.auth import auth_bp
+-from routes.proyectos import proyectos_bp
+ 
+ load_dotenv()
+ 
+ # Serve React build files from frontend/dist so the SPA can occupy the old portal URL
+ static_dir = os.path.join(os.path.dirname(__file__), 'frontend', 'dist')
+ app = Flask(__name__, static_folder=static_dir, template_folder='templates')
+-CORS(app)
++CORS(app, supports_credentials=True, origins=['http://localhost:5173', 'http://localhost:5174'])
+ 
+ # Asegura que exista una secret key para usar la sesión y mensajes flash.
+ app.secret_key = os.getenv("SECRET_KEY")
+@@ -110,7 +109,6 @@ def delete_user(user_id):
+ # Registrar Blueprints (módulos separados)
+ app.register_blueprint(auth_bp)
+ app.register_blueprint(usuarios_bp)
+-app.register_blueprint(proyectos_bp)
+ 
+ 
+ # SPA catch-all: serve index.html for any non-API path so the new React app
+diff --git a/check_stock.py b/check_stock.py
+deleted file mode 100644
+index 3c60020..0000000
+--- a/check_stock.py
++++ /dev/null
+@@ -1,42 +0,0 @@
+-import os
+-from dotenv import load_dotenv
+-from supabase import create_client
+-
+-load_dotenv()
+-url = os.getenv('SUPABASE_URL')
+-key = os.getenv('SUPABASE_KEY')
+-supabase = create_client(url, key)
+-
+-print('=== VERIFICANDO STOCK DEL PRODUCTO ESPECÍFICO ===')
+-# Verificar stock del producto que el usuario mencionó (10302520211)
+-response = supabase.table('product_locations').select('*, products(code, name), locations(full_code)').eq('products.code', '10302520211').execute()
+-if response.data:
+-    print('Stock del KIT RETENCIÓN D.13,6MM 120M SPAN 200M (10302520211):')
+-    for item in response.data:
+-        print(f'  ID: {item["id"]}')
+-        print(f'  Ubicación: {item["locations"]["full_code"]}')
+-        print(f'  Cantidad: {item["quantity"]}')
+-        print(f'  Warehouse: {item["warehouse_id"]}')
+-        print()
+-else:
+-    print('No se encontró stock para este producto')
+-
+-print('=== VERIFICANDO MOVEMENTS MÁS RECIENTES ===')
+-# Verificar los movements más recientes para ver si incluyen rack operations
+-response = supabase.table('movements').select('*').eq('type', 'OUTBOUND').order('created_at', desc=True).limit(3).execute()
+-if response.data:
+-    for movement in response.data:
+-        other_data = movement.get('other_data', {})
+-        # Handle case where other_data might be a string
+-        if isinstance(other_data, str):
+-            try:
+-                import json
+-                other_data = json.loads(other_data)
+-            except:
+-                other_data = {}
+-        print(f'Movement: {movement["document_number"]}')
+-        print(f'  Product ID: {movement["product_id"]}')
+-        print(f'  Quantity: {movement["quantity"]}')
+-        print(f'  Is Rack: {other_data.get("is_rack", "N/A")}')
+-        print(f'  Source ID: {other_data.get("source_id", "N/A")}')
+-        print()
+\ No newline at end of file
+diff --git a/frontend/src/components/Dashboard.jsx b/frontend/src/components/Dashboard.jsx
+index 5711b86..cb1e245 100644
+--- a/frontend/src/components/Dashboard.jsx
++++ b/frontend/src/components/Dashboard.jsx
+@@ -58,7 +58,9 @@ function Dashboard({ user, setUser }) {
+ 
+   const apps = [
+     { key: 'ordenes', name: 'Órdenes de Pago', description: 'Gestión de pagos y finanzas', icon: 'bi-receipt-cutoff', color: '#0d9488', category: 'finance' },
++    { key: 'fibra', name: 'Gestión Fibra', description: 'Control de despliegue', icon: 'bi-diagram-3', color: '#14b8a6', category: 'operations' },
+     { key: 'flota', name: 'Control Flota', description: 'Vehículos y mantenimiento', icon: 'bi-truck', color: '#06b6d4', category: 'logistics' },
++    // 👇 AGREGA ESTE BLOQUE 👇
+     { 
+       key: 'logistica', 
+       name: 'Logística', 
+@@ -67,8 +69,8 @@ function Dashboard({ user, setUser }) {
+       color: '#f59e0b', 
+       category: 'logistics' 
+     },
+-    // --- BOTÓN PRODUCCIÓN (NUEVO) ---
+-    { key: 'produccion', name: 'Producción', description: 'Control de Obras', icon: 'bi-hammer', color: '#fb923c', category: 'logistics' }
++    // 👆 FIN DEL BLOQUE 👆
++    { key: 'herramientas', name: 'Herramientas', description: 'Módulo en mantenimiento', icon: 'bi-cone-striped', color: '#64748b', maintenance: true, category: 'operations' }
+   ]
+ 
+   const categories = [
+diff --git a/frontend/src/modules/usuarios/components/UsuarioModal.jsx b/frontend/src/modules/usuarios/components/UsuarioModal.jsx
+index b1a0e0b..83e54e7 100644
+--- a/frontend/src/modules/usuarios/components/UsuarioModal.jsx
++++ b/frontend/src/modules/usuarios/components/UsuarioModal.jsx
+@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
+ import { Modal, Button, Form } from 'react-bootstrap'
+ 
+ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
+-  // Estado del formulario de usuario
+   const [formData, setFormData] = useState({
+     email: '',
+     password: '',
+@@ -12,19 +11,11 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
+       fibra: 'false',
+       flota: 'false',
+       herramientas: 'false',
+-      logistica: 'false',
+-      produccion: 'false'
++      logistica: 'false'
+     }
+   })
+   const [showPassword, setShowPassword] = useState(false)
+ 
+-  // Estados para la gestión de proyectos (Producción)
+-  const [projects, setProjects] = useState([]) // Todos los proyectos disponibles
+-  const [selectedProjects, setSelectedProjects] = useState([]) // IDs seleccionados
+-  const [loadingProjects, setLoadingProjects] = useState(false)
+-  const [isSaving, setIsSaving] = useState(false) // Nuevo estado para bloquear el botón mientras guarda
+-
+-  // 1. Cargar datos del usuario al abrir modal
+   useEffect(() => {
+     if (editingUser) {
+       setFormData({
+@@ -36,18 +27,10 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
+           fibra: String(editingUser.rol_fibra || 'false'),
+           flota: String(editingUser.rol_flota || 'false'),
+           herramientas: String(editingUser.rol_herramientas || 'false'),
+-          logistica: String(editingUser.rol_logistica || 'false'),
+-          produccion: String(editingUser.rol_produccion || 'false')
++          logistica: String(editingUser.rol_logistica || 'false')
+         }
+       })
+-      // Si ya viene con rol de usuario, cargar sus proyectos
+-      if (String(editingUser.rol_produccion) === 'true' || String(editingUser.rol_produccion) === 'usuario') {
+-        fetchUserProjects(editingUser.id)
+-      } else {
+-        setSelectedProjects([])
+-      }
+     } else {
+-      // Usuario Nuevo
+       setFormData({
+         email: '',
+         password: '',
+@@ -57,96 +40,16 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
+           fibra: 'false',
+           flota: 'false',
+           herramientas: 'false',
+-          logistica: 'false',
+-          produccion: 'false'
++          logistica: 'false'
+         }
+       })
+-      setSelectedProjects([])
+     }
+     setShowPassword(false)
+-    setIsSaving(false)
+   }, [editingUser, show])
+ 
+-  // 2. Cargar lista maestra de proyectos (Solo si es necesario)
+-  useEffect(() => {
+-    // Si el modal está abierto y el rol seleccionado es 'usuario'/'true', cargamos la lista
+-    if (show && (formData.roles.produccion === 'true' || formData.roles.produccion === 'usuario')) {
+-      fetchAllProjects()
+-    }
+-  }, [show, formData.roles.produccion])
+-
+-  // --- FUNCIONES DE API PARA PROYECTOS ---
+-
+-  const fetchAllProjects = async () => {
+-    try {
+-      setLoadingProjects(true)
+-      const response = await fetch('/api/proyectos', { credentials: 'include' })
+-      if (response.ok) {
+-        const data = await response.json()
+-        setProjects(data)
+-      }
+-    } catch (error) {
+-      console.error("Error cargando proyectos:", error)
+-    } finally {
+-      setLoadingProjects(false)
+-    }
+-  }
+-
+-  const fetchUserProjects = async (userId) => {
+-    try {
+-      const response = await fetch(`/api/mis-accesos/${userId}`, { credentials: 'include' })
+-      if (response.ok) {
+-        const ids = await response.json()
+-        setSelectedProjects(ids)
+-      }
+-    } catch (error) {
+-      console.error("Error cargando permisos:", error)
+-    }
+-  }
+-
+-  // Modificado para que retorne una Promesa y lance error si falla
+-  const saveProjectPermissions = async (userId, projectIds) => {
+-    console.log(`💾 Enviando permisos a Python. Usuario: ${userId}, Proyectos: ${projectIds}`);
+-    const response = await fetch('/api/admin/asignar-proyectos', {
+-      method: 'POST',
+-      headers: { 'Content-Type': 'application/json' },
+-      body: JSON.stringify({
+-        user_id: userId,
+-        proyectos_ids: projectIds
+-      }),
+-      credentials: 'include'
+-    })
+-    
+-    if (!response.ok) {
+-      throw new Error('Error en la respuesta del servidor al guardar proyectos')
+-    }
+-    console.log("✅ Permisos guardados correctamente en BD");
+-  }
+-
+-  // --- MANEJADORES DE EVENTOS ---
+-
+-  const handleSubmit = async (e) => {
++  const handleSubmit = (e) => {
+     e.preventDefault()
+-    setIsSaving(true) // Bloqueamos botones para evitar doble click
+-
+-    try {
+-      // 1. CRUCIAL: Primero guardamos los proyectos (Si estamos editando y es usuario de producción)
+-      const shouldSaveProjects = editingUser && (formData.roles.produccion === 'true' || formData.roles.produccion === 'usuario');
+-
+-      if (shouldSaveProjects) {
+-         // Esperamos explícitamente a que esto termine antes de seguir
+-         await saveProjectPermissions(editingUser.id, selectedProjects)
+-      }
+-
+-      // 2. Si los proyectos se guardaron bien (o no era necesario), guardamos el usuario
+-      // Esta función (onSave) es la que cierra el modal al final
+-      await onSave(formData)
+-
+-    } catch (error) {
+-      console.error("❌ Error grave al guardar:", error)
+-      alert("Hubo un error al guardar los permisos. Verifica que el servidor Python esté corriendo.")
+-      setIsSaving(false) // Desbloqueamos si hubo error
+-    }
++    onSave(formData)
+   }
+ 
+   const handleRoleChange = (role, value) => {
+@@ -159,40 +62,20 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
+     }))
+   }
+ 
+-  const handleProjectToggle = (projectId) => {
+-    setSelectedProjects(prev => {
+-      if (prev.includes(projectId)) {
+-        return prev.filter(id => id !== projectId)
+-      } else {
+-        return [...prev, projectId]
+-      }
+-    })
+-  }
+-
+-  const handleSelectAllProjects = () => {
+-    if (selectedProjects.length === projects.length) {
+-      setSelectedProjects([])
+-    } else {
+-      setSelectedProjects(projects.map(p => p.id))
+-    }
+-  }
+-
+   const apps = [
+     { key: 'ordenes', name: 'Órdenes de Pago', icon: 'bi-receipt-cutoff', color: '#0d9488' },
+     { key: 'fibra', name: 'Gestión Fibra', icon: 'bi-diagram-3', color: '#14b8a6' },
+     { key: 'flota', name: 'Control Flota', icon: 'bi-truck', color: '#06b6d4' },
+     { key: 'logistica', name: 'Logística', icon: 'bi-box-seam', color: '#f59e0b' },
+-    { key: 'produccion', name: 'Producción', icon: 'bi-hammer', color: '#fb923c' },
+     { key: 'herramientas', name: 'Herramientas', icon: 'bi-tools', color: '#64748b' }
+   ]
+ 
+   const isSelf = editingUser && String(editingUser.id) === String(currentUserId)
+-  const showProjectSelector = (formData.roles.produccion === 'true' || formData.roles.produccion === 'usuario')
+ 
+   return (
+     <Modal 
+       show={show} 
+-      onHide={!isSaving ? onHide : undefined} // Evita cerrar si está guardando
++      onHide={onHide} 
+       size="lg" 
+       centered
+       backdrop="static"
+@@ -232,7 +115,6 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
+             type="button"
+             className="btn-close"
+             onClick={onHide}
+-            disabled={isSaving}
+             style={{ position: 'absolute', right: '24px', top: '24px' }}
+           ></button>
+         </Modal.Header>
+@@ -258,17 +140,30 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
+                   Correo electrónico
+                 </label>
+                 <div className="input-group">
+-                  <span className="input-group-text" style={{ background: 'white', borderRight: 'none', color: '#94a3b8' }}>
++                  <span 
++                    className="input-group-text"
++                    style={{ 
++                      background: 'white',
++                      border: '1px solid #e2e8f0',
++                      borderRight: 'none',
++                      color: '#94a3b8'
++                    }}
++                  >
+                     <i className="bi bi-envelope"></i>
+                   </span>
+                   <input
+                     type="email"
+                     className="form-control"
+                     value={formData.email}
++                    placeholder="usuario@empresa.com"
+                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                     required
+-                    disabled={isSaving}
+-                    style={{ borderLeft: 'none' }}
++                    style={{
++                      border: '1px solid #e2e8f0',
++                      borderLeft: 'none',
++                      padding: '12px 16px',
++                      fontSize: '14px'
++                    }}
+                   />
+                 </div>
+               </div>
+@@ -278,7 +173,15 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
+                   Contraseña {editingUser && <span style={{ color: '#94a3b8', fontWeight: '400' }}>(dejar vacío para mantener)</span>}
+                 </label>
+                 <div className="input-group">
+-                  <span className="input-group-text" style={{ background: 'white', borderRight: 'none', color: '#94a3b8' }}>
++                  <span 
++                    className="input-group-text"
++                    style={{ 
++                      background: 'white',
++                      border: '1px solid #e2e8f0',
++                      borderRight: 'none',
++                      color: '#94a3b8'
++                    }}
++                  >
+                     <i className="bi bi-lock"></i>
+                   </span>
+                   <input
+@@ -288,15 +191,25 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
+                     placeholder={editingUser ? '••••••••' : 'Mínimo 8 caracteres'}
+                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                     required={!editingUser}
+-                    disabled={isSaving}
+-                    style={{ borderLeft: 'none', borderRight: 'none' }}
++                    style={{
++                      border: '1px solid #e2e8f0',
++                      borderLeft: 'none',
++                      borderRight: 'none',
++                      padding: '12px 16px',
++                      fontSize: '14px'
++                    }}
+                   />
+                   <button
+                     type="button"
+                     className="input-group-text"
+                     onClick={() => setShowPassword(!showPassword)}
+-                    disabled={isSaving}
+-                    style={{ background: 'white', borderLeft: 'none', cursor: 'pointer' }}
++                    style={{ 
++                      background: 'white',
++                      border: '1px solid #e2e8f0',
++                      borderLeft: 'none',
++                      color: '#94a3b8',
++                      cursor: 'pointer'
++                    }}
+                   >
+                     <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                   </button>
+@@ -306,24 +219,60 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
+           </div>
+ 
+           {/* Superusuario */}
+-          <div className="p-4 mb-4" style={{ background: formData.roles.admin ? '#f0fdfa' : '#f8fafc', borderRadius: '12px', border: formData.roles.admin ? '1px solid #99f6e4' : '1px solid #e2e8f0' }}>
++          <div 
++            className="p-4 mb-4"
++            style={{ 
++              background: formData.roles.admin ? '#f0fdfa' : '#f8fafc', 
++              borderRadius: '12px',
++              border: formData.roles.admin ? '1px solid #99f6e4' : '1px solid #e2e8f0',
++              transition: 'all 0.2s'
++            }}
++          >
+             <div className="d-flex align-items-start gap-3">
+-              <div className="form-check form-switch" style={{ paddingLeft: '0' }}>
++              <div 
++                className="form-check form-switch"
++                style={{ paddingLeft: '0' }}
++              >
+                 <input
+                   type="checkbox"
+                   className="form-check-input"
+                   id="superuser-switch"
+                   checked={!!formData.roles.admin}
+-                  disabled={isSelf || isSaving}
++                  disabled={isSelf}
+                   onChange={(e) => handleRoleChange('admin', e.target.checked)}
+-                  style={{ width: '44px', height: '24px', cursor: isSelf || isSaving ? 'not-allowed' : 'pointer', marginLeft: 0 }}
++                  style={{
++                    width: '44px',
++                    height: '24px',
++                    cursor: isSelf ? 'not-allowed' : 'pointer',
++                    marginLeft: 0
++                  }}
+                 />
+               </div>
+               <div className="flex-grow-1">
+-                <label htmlFor="superuser-switch" className="form-check-label d-flex align-items-center gap-2 mb-1" style={{ fontWeight: '600', color: '#0f172a' }}>
++                <label 
++                  htmlFor="superuser-switch" 
++                  className="form-check-label d-flex align-items-center gap-2 mb-1"
++                  style={{ 
++                    fontWeight: '600', 
++                    color: '#0f172a',
++                    cursor: isSelf ? 'not-allowed' : 'pointer'
++                  }}
++                >
++                  <i className="bi bi-shield-check" style={{ color: '#0d9488' }}></i>
+                   Superusuario
+                 </label>
+-                <p className="mb-0 text-muted" style={{ fontSize: '13px' }}>Acceso completo al panel de administración.</p>
++                <p className="mb-0" style={{ fontSize: '13px', color: '#64748b' }}>
++                  Acceso completo al panel de administración y gestión de usuarios
++                </p>
++                {isSelf && (
++                  <div 
++                    className="mt-2 d-flex align-items-center gap-2"
++                    style={{ fontSize: '12px', color: '#f59e0b' }}
++                  >
++                    <i className="bi bi-info-circle"></i>
++                    No puedes modificar tu propio rol de superusuario
++                  </div>
++                )}
+               </div>
+             </div>
+           </div>
+@@ -340,12 +289,31 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
+                 const currentValue = String(formData.roles[app.key])
+                 return (
+                   <div key={app.key} className="col-md-6">
+-                    <div className="p-3 h-100" style={{ background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
++                    <div 
++                      className="p-3 h-100"
++                      style={{ 
++                        background: '#f8fafc', 
++                        borderRadius: '12px',
++                        border: '1px solid #e2e8f0'
++                      }}
++                    >
+                       <div className="d-flex align-items-center gap-2 mb-3">
+-                        <div className="d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px', borderRadius: '8px', background: app.color, color: 'white' }}>
++                        <div
++                          className="d-flex align-items-center justify-content-center"
++                          style={{
++                            width: '32px',
++                            height: '32px',
++                            borderRadius: '8px',
++                            background: app.color,
++                            color: 'white',
++                            fontSize: '14px'
++                          }}
++                        >
+                           <i className={`bi ${app.icon}`}></i>
+                         </div>
+-                        <span style={{ fontWeight: '600', color: '#0f172a', fontSize: '14px' }}>{app.name}</span>
++                        <span style={{ fontWeight: '600', color: '#0f172a', fontSize: '14px' }}>
++                          {app.name}
++                        </span>
+                       </div>
+                       
+                       <div className="d-flex gap-2">
+@@ -359,14 +327,15 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
+                             type="button"
+                             className="btn btn-sm flex-fill"
+                             onClick={() => handleRoleChange(app.key, option.value)}
+-                            disabled={isSaving}
+                             style={{
+                               background: currentValue === option.value ? option.bg : 'white',
+                               color: currentValue === option.value ? option.color : '#94a3b8',
+                               border: `1.5px solid ${currentValue === option.value ? option.border : '#e2e8f0'}`,
+                               borderRadius: '8px',
+                               fontSize: '12px',
+-                              fontWeight: currentValue === option.value ? '600' : '500'
++                              fontWeight: currentValue === option.value ? '600' : '500',
++                              padding: '8px 4px',
++                              transition: 'all 0.2s'
+                             }}
+                           >
+                             {option.label}
+@@ -379,113 +348,51 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
+               })}
+             </div>
+           </div>
+-
+-          {/* --- SECCIÓN NUEVA: ASIGNACIÓN DE PROYECTOS --- */}
+-          {editingUser && showProjectSelector && (
+-            <div className="mt-4 pt-4 border-top">
+-              <div className="d-flex align-items-center justify-content-between mb-3">
+-                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ color: '#fb923c', fontWeight: '700' }}>
+-                  <i className="bi bi-hammer"></i>
+-                  Acceso a Proyectos (Producción)
+-                </h6>
+-                <button 
+-                  type="button" 
+-                  className="btn btn-sm btn-link text-decoration-none"
+-                  onClick={handleSelectAllProjects}
+-                  disabled={isSaving}
+-                  style={{ fontSize: '13px', color: '#fb923c' }}
+-                >
+-                  {selectedProjects.length === projects.length ? 'Desmarcar todos' : 'Marcar todos'}
+-                </button>
+-              </div>
+-
+-              {loadingProjects ? (
+-                <div className="text-center py-3 text-muted">Cargando proyectos...</div>
+-              ) : projects.length === 0 ? (
+-                <div className="alert alert-warning">No hay proyectos disponibles en el sistema.</div>
+-              ) : (
+-                <div 
+-                  className="p-3" 
+-                  style={{ 
+-                    background: '#fff7ed', 
+-                    borderRadius: '12px', 
+-                    border: '1px solid #ffedd5',
+-                    maxHeight: '200px',
+-                    overflowY: 'auto'
+-                  }}
+-                >
+-                  <div className="row g-2">
+-                    {projects.map(project => (
+-                      <div className="col-md-6" key={project.id}>
+-                        <div className="form-check">
+-                          <input
+-                            className="form-check-input"
+-                            type="checkbox"
+-                            id={`proj-${project.id}`}
+-                            checked={selectedProjects.includes(project.id)}
+-                            onChange={() => handleProjectToggle(project.id)}
+-                            disabled={isSaving}
+-                            style={{ cursor: 'pointer', borderColor: '#fdba74' }}
+-                          />
+-                          <label 
+-                            className="form-check-label" 
+-                            htmlFor={`proj-${project.id}`}
+-                            style={{ fontSize: '13px', color: '#431407', cursor: 'pointer' }}
+-                          >
+-                            {project.proyecto}
+-                          </label>
+-                        </div>
+-                      </div>
+-                    ))}
+-                  </div>
+-                </div>
+-              )}
+-              <div className="form-text mt-2">
+-                <i className="bi bi-info-circle me-1"></i>
+-                Selecciona los proyectos que este usuario podrá ver y gestionar.
+-              </div>
+-            </div>
+-          )}
+-
+-          {!editingUser && showProjectSelector && (
+-            <div className="mt-4 alert alert-info">
+-              <i className="bi bi-info-circle-fill me-2"></i>
+-              Para asignar proyectos específicos, primero crea el usuario y luego edítalo.
+-            </div>
+-          )}
+-
+         </Modal.Body>
+ 
+         {/* Footer */}
+-        <Modal.Footer className="border-0" style={{ padding: '16px 24px 24px', gap: '12px' }}>
++        <Modal.Footer 
++          className="border-0"
++          style={{ padding: '16px 24px 24px', gap: '12px' }}
++        >
+           <Button 
+             variant="light" 
+-            onClick={onHide} 
+-            disabled={isSaving}
+-            style={{ padding: '12px 24px', borderRadius: '10px' }}
++            onClick={onHide}
++            style={{
++              padding: '12px 24px',
++              borderRadius: '10px',
++              fontWeight: '500',
++              border: '1px solid #e2e8f0',
++              color: '#475569'
++            }}
+           >
+             Cancelar
+           </Button>
+           <Button 
+             type="submit"
+-            disabled={isSaving}
+             style={{
+-              background: editingUser ? 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)' : 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)',
++              background: editingUser 
++                ? 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)'
++                : 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)',
+               border: 'none',
+               padding: '12px 32px',
+               borderRadius: '10px',
+               fontWeight: '600',
+-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+-              opacity: isSaving ? 0.7 : 1
++              boxShadow: editingUser 
++                ? '0 4px 12px rgba(245, 158, 11, 0.3)'
++                : '0 4px 12px rgba(13, 148, 136, 0.3)'
+             }}
+           >
+-            {isSaving ? (
++            {editingUser ? (
+               <>
+-                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+-                Guardando...
++                <i className="bi bi-check-lg me-2"></i>
++                Guardar Cambios
+               </>
+             ) : (
+-              editingUser ? <><i className="bi bi-check-lg me-2"></i>Guardar Cambios</> : <><i className="bi bi-plus-lg me-2"></i>Crear Usuario</>
++              <>
++                <i className="bi bi-plus-lg me-2"></i>
++                Crear Usuario
++              </>
+             )}
+           </Button>
+         </Modal.Footer>
+diff --git a/frontend/src/modules/usuarios/components/UsuariosTable.jsx b/frontend/src/modules/usuarios/components/UsuariosTable.jsx
+index 53f85aa..7e34dfe 100644
+--- a/frontend/src/modules/usuarios/components/UsuariosTable.jsx
++++ b/frontend/src/modules/usuarios/components/UsuariosTable.jsx
+@@ -21,7 +21,7 @@ function UsuariosTable({ users, currentUserId, onEdit, onDelete }) {
+         </span>
+       )
+     }
+-    if (role === 'true' || role === true || role === 'usuario') {
++    if (role === 'true' || role === true) {
+       return (
+         <span 
+           className="badge"
+@@ -148,19 +148,6 @@ function UsuariosTable({ users, currentUserId, onEdit, onDelete }) {
+             >
+               Logística
+             </th>
+-            <th 
+-              className="text-uppercase text-center" 
+-              style={{ 
+-                padding: '16px 12px',
+-                fontSize: '11px',
+-                fontWeight: '700',
+-                color: '#64748b',
+-                letterSpacing: '0.5px',
+-                background: '#f8fafc'
+-              }}
+-            >
+-              Producción
+-            </th>
+             <th 
+               className="text-uppercase text-end" 
+               style={{ 
+@@ -249,9 +236,6 @@ function UsuariosTable({ users, currentUserId, onEdit, onDelete }) {
+               <td className="text-center align-middle" style={{ padding: '16px 12px' }}>
+                 {getRoleBadge(user.rol_logistica)}
+               </td>
+-              <td className="text-center align-middle" style={{ padding: '16px 12px' }}>
+-                {getRoleBadge(user.rol_produccion)}
+-              </td>
+               <td className="text-end align-middle" style={{ padding: '16px 24px' }}>
+                 <div className="d-flex justify-content-end gap-2">
+                   <button 
+diff --git a/migrations/005_debug_dispatch_materials.sql b/migrations/005_debug_dispatch_materials.sql
+deleted file mode 100644
+index f28dc70..0000000
+--- a/migrations/005_debug_dispatch_materials.sql
++++ /dev/null
+@@ -1,119 +0,0 @@
+--- Debug version of dispatch_materials RPC with logging
+-
+-CREATE OR REPLACE FUNCTION dispatch_materials_debug(
+-    p_warehouse_id UUID,
+-    p_project_id INTEGER,
+-    p_document_number TEXT,
+-    p_receiver_name TEXT,
+-    p_user_email TEXT,
+-    p_items JSONB,
+-    p_receiver_rut TEXT DEFAULT '',
+-    p_receiver_stage TEXT DEFAULT ''
+-)
+-RETURNS VOID
+-LANGUAGE plpgsql
+-SECURITY DEFINER
+-AS $$
+-DECLARE
+-    item_record RECORD;
+-    product_id_val UUID;
+-    quantity_val INTEGER;
+-    is_rack_val BOOLEAN;
+-    source_id_val UUID;
+-BEGIN
+-    -- Process each item in the dispatch
+-    FOR item_record IN SELECT * FROM jsonb_array_elements(p_items)
+-    LOOP
+-        -- Extract values for debugging
+-        product_id_val := (item_record.value->>'productId')::UUID;
+-        quantity_val := (item_record.value->>'quantity')::INTEGER;
+-        is_rack_val := (item_record.value->>'isRack')::BOOLEAN;
+-        source_id_val := (item_record.value->>'sourceId')::UUID;
+-
+-        RAISE NOTICE 'Processing item: product_id=%, quantity=%, is_rack=%, source_id=%',
+-            product_id_val, quantity_val, is_rack_val, source_id_val;
+-
+-        -- Log the outbound movement
+-        INSERT INTO movements (
+-            warehouse_id,
+-            product_id,
+-            type,
+-            quantity,
+-            document_number,
+-            user_email,
+-            project_id,
+-            other_data
+-        ) VALUES (
+-            p_warehouse_id,
+-            product_id_val,
+-            'OUTBOUND',
+-            quantity_val,
+-            p_document_number,
+-            p_user_email,
+-            p_project_id,
+-            jsonb_build_object(
+-                'is_rack', is_rack_val,
+-                'source_id', source_id_val,
+-                'project_id', p_project_id,
+-                'receiver_name', p_receiver_name,
+-                'receiver_rut', p_receiver_rut,
+-                'receiver_stage', p_receiver_stage
+-            )
+-        );
+-
+-        -- Update stock based on whether it's from a rack or general stock
+-        IF is_rack_val = true THEN
+-            RAISE NOTICE 'Updating rack location: source_id=%, quantity=%', source_id_val, quantity_val;
+-
+-            -- Update specific rack location
+-            UPDATE product_locations
+-            SET quantity = quantity - quantity_val
+-            WHERE id = source_id_val
+-              AND quantity >= quantity_val;
+-
+-            IF NOT FOUND THEN
+-                RAISE EXCEPTION 'Insufficient stock in rack location % for product %',
+-                    source_id_val, product_id_val;
+-            END IF;
+-
+-            RAISE NOTICE 'Rack location updated successfully';
+-
+-            -- Also update the general product stock
+-            RAISE NOTICE 'Updating general product stock: product_id=%, quantity=%', product_id_val, quantity_val;
+-
+-            UPDATE products
+-            SET current_stock = current_stock - quantity_val
+-            WHERE id = product_id_val
+-              AND current_stock >= quantity_val;
+-
+-            IF NOT FOUND THEN
+-                RAISE EXCEPTION 'Insufficient general stock for product %',
+-                    product_id_val;
+-            END IF;
+-
+-            RAISE NOTICE 'General product stock updated successfully';
+-
+-        ELSE
+-            RAISE NOTICE 'Updating general stock only: product_id=%, quantity=%', product_id_val, quantity_val;
+-
+-            -- Update general stock only
+-            UPDATE products
+-            SET current_stock = current_stock - quantity_val
+-            WHERE id = product_id_val
+-              AND current_stock >= quantity_val;
+-
+-            IF NOT FOUND THEN
+-                RAISE EXCEPTION 'Insufficient stock for product %',
+-                    product_id_val;
+-            END IF;
+-
+-            RAISE NOTICE 'General stock updated successfully';
+-        END IF;
+-    END LOOP;
+-
+-EXCEPTION
+-    WHEN OTHERS THEN
+-        -- Rollback will happen automatically
+-        RAISE EXCEPTION 'Error procesando despacho: %', SQLERRM;
+-END;
+-$$;
+\ No newline at end of file
+diff --git a/routes/auth.py b/routes/auth.py
+index d0f1eac..0fed305 100644
+--- a/routes/auth.py
++++ b/routes/auth.py
+@@ -15,23 +15,9 @@ def get_supabase_client():
+     from flask import current_app
+     return current_app.config['SUPABASE_CLIENT']
+ 
+-"""
+-Módulo de rutas para autenticación
+-"""
+-from flask import Blueprint, request, session, jsonify
+-import bcrypt
+-import jwt
+-import datetime
+-import os
+-
+-auth_bp = Blueprint('auth', __name__, url_prefix='/api')
+-
+-def get_supabase_client():
+-    from flask import current_app
+-    return current_app.config['SUPABASE_CLIENT']
+-
+ @auth_bp.route('/login', methods=['POST'])
+ def login():
++    """Autenticar usuario y crear sesión"""
+     data = request.get_json()
+     email = data.get('email')
+     password = data.get('password')
+@@ -46,97 +32,101 @@ def login():
+         user = response.data[0]
+ 
+         if bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+-            # Guardamos datos en sesión
+             session['user_email'] = user['email']
+-            
+-            # Normalización de Superusuario
++            # Agregar campo rol_admin basado en rol_ordenes
++            user['rol_admin'] = (user.get('rol_ordenes') == 'admin')
++            # Definir is_superuser: por ahora sólo permitimos el superusuario definido
++            # por la variable de entorno SUPERUSER_EMAIL. No derivamos is_superuser de
++            # otros campos (rol_admin) para evitar accesos indeseados.
+             super_email = (os.getenv('SUPERUSER_EMAIL') or '').strip().lower()
++            # Normalize emails to avoid mismatches por mayúsculas/espacios
+             user_email = (user.get('email') or '').strip().lower()
++            # Prefer the DB flag 'is_superuser' if present, otherwise fall back to SUPERUSER_EMAIL
+             user['is_superuser'] = bool(user.get('is_superuser')) or bool(super_email and user_email == super_email)
++            session['user_data'] = user
+             
+-            session['user_data'] = user # <--- ESTO ES VITAL PARA PROYECTOS.PY
+-            
+-            # Generación de Token para otros módulos
+-            jwt_secret = os.getenv('JWT_SECRET_KEY') or os.getenv('SECRET_KEY')
+-            secret = jwt_secret.strip() if jwt_secret else "secret"
+-            
+-            now = datetime.datetime.utcnow()
++            # Generar token SSO
++            JWT_SECRET = os.getenv('JWT_SECRET_KEY') or os.getenv('SECRET_KEY')
+             payload = {
+-                "iss": "supabase",
+-                "sub": str(user['id']),
+-                "aud": "authenticated",
+-                "role": "authenticated",
+-                "email": user['email'],
+-                "exp": now + datetime.timedelta(hours=8),
+-                "iat": now,
+-                "user_metadata": {
+-                    "roles": {
+-                        'produccion': user.get('rol_produccion')
+-                    }
+-                }
++                'sub': user['id'],
++                'email': user['email'],
++                'roles': {
++                    'ordenes': user['rol_ordenes'],
++                    'fibra': user['rol_fibra'],
++                    'flota': user['rol_flota'],
++                    'herramientas': user['rol_herramientas']
++                },
++                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=8)
+             }
++            token = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
+             
+-            token = jwt.encode(payload, secret, algorithm='HS256')
+-
+             return jsonify({'token': token, 'user': user})
+         else:
+             return jsonify({'error': 'Contraseña incorrecta'}), 401
+     except Exception as e:
+-        print(f"Error Login: {e}")
+         return jsonify({'error': str(e)}), 500
+ 
+-@auth_bp.route('/dashboard', methods=['GET'])
++@auth_bp.route('/dashboard')
+ def dashboard():
++    """Obtener datos del dashboard del usuario"""
+     if 'user_email' not in session:
+         return jsonify({'error': 'No autorizado'}), 401
+     
+-    # Refrescamos datos de usuario
++    # Refresh current user from DB to pick up changes to is_superuser
+     sb = get_supabase_client()
+-    try:
+-        db_resp = sb.table('usuarios_sso').select('*').eq('email', session.get('user_email')).execute()
+-        if db_resp.data:
+-            user = db_resp.data[0]
+-            # Recalcular superuser
+-            super_email = (os.getenv('SUPERUSER_EMAIL') or '').strip().lower()
+-            user_email = (user.get('email') or '').strip().lower()
+-            user['is_superuser'] = bool(user.get('is_superuser')) or bool(super_email and user_email == super_email)
+-            session['user_data'] = user
+-        else:
+-            user = session.get('user_data')
+-    except:
++    db_resp = sb.table('usuarios_sso').select('*').eq('email', session.get('user_email')).execute()
++    if db_resp.data:
++        user = db_resp.data[0]
++        # update session with latest data
++        session['user_data'] = user
++    else:
+         user = session.get('user_data')
+-
+-    # Token simple para links
+-    jwt_secret = os.getenv('JWT_SECRET_KEY') or os.getenv('SECRET_KEY')
+-    secret = jwt_secret.strip() if jwt_secret else "secret"
++    # Asegurar que rol_admin esté presente
++    user['rol_admin'] = (user.get('rol_ordenes') == 'admin')
++    # Asegurar campo is_superuser (en caso de sesión anterior). Solo habilitamos
++    # superuser si el email coincide con SUPERUSER_EMAIL — esto fuerza un único
++    # superusuario explícito hasta que se implemente la columna DB dedicada.
++    super_email = (os.getenv('SUPERUSER_EMAIL') or '').strip().lower()
++    user_email = (user.get('email') or '').strip().lower()
++    # Prefer the stored DB flag when available, otherwise fall back to SUPERUSER_EMAIL
++    user['is_superuser'] = bool(user.get('is_superuser')) or bool(super_email and user_email == super_email)
++    
++    JWT_SECRET = os.getenv('JWT_SECRET_KEY') or os.getenv('SECRET_KEY')
+     payload = {
+-        "sub": str(user['id']),
+-        "email": user['email'],
+-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=8)
++        'sub': user['id'],
++        'email': user['email'],
++        'roles': {
++            'ordenes': user['rol_ordenes'],
++            'fibra': user['rol_fibra'],
++            'flota': user['rol_flota'],
++            'herramientas': user['rol_herramientas'],
++            'logistica': user['rol_logistica']
++        },
++        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=8)
+     }
+-    token_sso = jwt.encode(payload, secret, algorithm='HS256')
++    token_sso = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
+     
+-    url_produccion = os.getenv("URL_PRODUCCION", "http://localhost:5180")
+-    url_logistica = os.getenv('URL_LOGISTICA')
+-    url_flota = os.getenv('URL_FLOTA')
+-    url_compras = os.getenv('URL_COMPRAS')
++    # 1. Leemos las variables. Si no existen, por seguridad usamos localhost
++    url_logistica = os.getenv("URL_LOGISTICA", "http://localhost:5160")
++    url_flota = os.getenv("URL_FLOTA", "http://localhost:5175")
+ 
+-    links = {}
+-    # Agregar solo si la URL está definida en el entorno
+-    if url_produccion:
+-        links['produccion'] = f"{url_produccion}/?token={token_sso}"
+-    if url_logistica:
+-        links['logistica'] = f"{url_logistica}/?token={token_sso}"
+-    if url_flota:
+-        links['flota'] = f"{url_flota}/?token={token_sso}"
+-    if url_compras:
+-        # 'ordenes' corresponde al módulo de órdenes de pago/compras
+-        links['ordenes'] = f"{url_compras}/?token={token_sso}"
++    links = {
++        'ordenes': f"https://pagos.datix.cl/sso/login?token={token_sso}",
++        'fibra': f"https://pro.datix.cl/sso/login?token={token_sso}",
++        'herramientas': f"https://herramientas.datix.cl/sso/login?token={token_sso}",
++        
++        # 2. Usamos las variables dinámicas para módulos locales
++        # Para módulos locales mantenemos el comportamiento específico:
++        # - Flota: volver al endpoint /sso/login (necesario para la integración existente)
++        # - Logística: SPA que recibe token en la raíz
++        'flota': f"{url_flota}/sso/login?token={token_sso}",
++        'logistica': f"{url_logistica}/?token={token_sso}"
++    }
+     
+     return jsonify({'user': user, 'links': links})
+ 
+ @auth_bp.route('/logout', methods=['POST'])
+ def logout():
++    """Cerrar sesión del usuario"""
+     session.clear()
+-    return jsonify({'message': 'Sesión cerrada'})
+-    
++    return jsonify({'message': 'Sesión cerrada exitosamente'})
+diff --git a/routes/proyectos.py b/routes/proyectos.py
+deleted file mode 100644
+index 5f7ec5f..0000000
+--- a/routes/proyectos.py
++++ /dev/null
+@@ -1,159 +0,0 @@
+-from flask import Blueprint, jsonify, session, request
+-from supabase import create_client, Client
+-import os
+-from dotenv import load_dotenv
+-
+-load_dotenv()
+-
+-proyectos_bp = Blueprint('proyectos', __name__)
+-
+-# Variables de conexión para la DB de proyectos
+-url = os.environ.get("DB_PROYECTOS_URL")
+-key = os.environ.get("DB_PROYECTOS_KEY")
+-
+-# Inicializamos el cliente de proyectos de forma segura. Si faltan las
+-# variables NO interrumpimos el arranque de la aplicación: dejamos
+-# `supabase_proyectos` en None y las rutas responderán de forma controlada.
+-supabase_proyectos: Client | None = None
+-if not url or not key:
+-    print("⚠️ DB_PROYECTOS no configurada en .env. Algunas rutas devolverán respuestas vacías o 503.")
+-else:
+-    try:
+-        supabase_proyectos = create_client(url, key)
+-    except Exception as e:
+-        print(f"❌ Error cliente Supabase: {e}")
+-        supabase_proyectos = None
+-
+-# --- RUTAS DE LECTURA ---
+-
+-@proyectos_bp.route('/api/proyectos', methods=['GET'])
+-def obtener_proyectos():
+-    try:
+-        if 'user_data' not in session:
+-            return jsonify({'error': 'No autorizado'}), 401
+-
+-        # Si el cliente de proyectos no está inicializado, devolvemos lista vacía
+-        if supabase_proyectos is None:
+-            print("⚠️ Acceso a /api/proyectos solicitado pero DB_PROYECTOS no está configurada.")
+-            return jsonify([]), 200
+-
+-        user = session['user_data']
+-        user_id = user.get('id')
+-        
+-        # 1. Roles y Banderas
+-        rol_produccion = str(user.get('rol_produccion', 'false')).lower().strip()
+-        es_superuser = bool(user.get('is_superuser', False))
+-
+-        # 2. ESCENARIO ADMIN O SUPERUSUARIO (Ven Todo)
+-        if es_superuser or rol_produccion == 'admin':
+-            response = supabase_proyectos.table('proyectos')\
+-                .select('*')\
+-                .order('proyecto', desc=True)\
+-                .execute()
+-            return jsonify(response.data), 200
+-
+-        # 3. ESCENARIO USUARIO NORMAL (Filtro por Tabla)
+-        elif rol_produccion in ['true', 'usuario', 'user']:
+-            permisos = supabase_proyectos.table('prod_acceso_proyectos')\
+-                .select('proyecto_id')\
+-                .eq('user_id', user_id)\
+-                .execute()
+-            
+-            ids_permitidos = [item['proyecto_id'] for item in permisos.data]
+-
+-            if not ids_permitidos:
+-                return jsonify([]), 200
+-
+-            response = supabase_proyectos.table('proyectos')\
+-                .select('*')\
+-                .in_('id', ids_permitidos)\
+-                .order('proyecto', desc=True)\
+-                .execute()
+-            
+-            return jsonify(response.data), 200
+-
+-        else:
+-            return jsonify([]), 200
+-
+-    except Exception as e:
+-        print(f"❌ Error: {e}")
+-        return jsonify({'error': str(e)}), 500
+-
+-@proyectos_bp.route('/api/mis-accesos/<string:user_id>', methods=['GET'])
+-def obtener_mis_accesos(user_id):
+-    """
+-    Obtiene los IDs de proyectos permitidos para un usuario específico.
+-    Se usa para pre-cargar los checkboxes en el Modal de Edición.
+-    """
+-    try:
+-        if supabase_proyectos is None:
+-            print("⚠️ Petición a /api/mis-accesos pero DB_PROYECTOS no está configurada.")
+-            return jsonify([]), 200
+-
+-        response = supabase_proyectos.table('prod_acceso_proyectos')\
+-            .select('proyecto_id')\
+-            .eq('user_id', user_id)\
+-            .execute()
+-        ids = [item['proyecto_id'] for item in response.data]
+-        return jsonify(ids), 200
+-    except Exception as e:
+-        print(f"Error obteniendo accesos: {e}")
+-        return jsonify([]), 200
+-
+-# --- NUEVA RUTA DE ESCRITURA (ADMINISTRACIÓN) ---
+-
+-@proyectos_bp.route('/api/admin/asignar-proyectos', methods=['POST'])
+-def asignar_proyectos_usuario():
+-    """
+-    Guarda la lista de proyectos permitidos para un usuario.
+-    Lógica: Borra todo lo anterior e inserta lo nuevo.
+-    """
+-    try:
+-        # 1. Seguridad: Quien ejecuta esto debe ser Admin o Superuser
+-        if 'user_data' not in session:
+-            return jsonify({'error': 'No autorizado'}), 401
+-            
+-        admin_user = session['user_data']
+-        es_superuser = bool(admin_user.get('is_superuser', False))
+-        # Permitimos si es Superuser O si es Admin de Producción específicamente
+-        rol_prod_admin = str(admin_user.get('rol_produccion', '')).lower() == 'admin'
+-
+-        if not (es_superuser or rol_prod_admin):
+-             return jsonify({'error': 'No tienes permisos para asignar proyectos'}), 403
+-
+-        # 2. Obtener datos del Frontend
+-        data = request.get_json()
+-        target_user_id = data.get('user_id')
+-        nuevos_proyectos_ids = data.get('proyectos_ids', []) # Lista de IDs [1, 5, 8]
+-
+-        if not target_user_id:
+-            return jsonify({'error': 'Falta el ID del usuario objetivo'}), 400
+-
+-        print(f"💾 Guardando permisos para {target_user_id}. IDs: {nuevos_proyectos_ids}")
+-
+-        # Si el cliente no está disponible, respondemos con error 503
+-        if supabase_proyectos is None:
+-            print("⚠️ Intento de guardar permisos pero DB_PROYECTOS no está configurada.")
+-            return jsonify({'error': 'DB_PROYECTOS no configurada en el servidor'}), 503
+-
+-        # 3. Transacción (Simulada)
+-        # Paso A: Borrar permisos antiguos de este usuario
+-        supabase_proyectos.table('prod_acceso_proyectos')\
+-            .delete()\
+-            .eq('user_id', target_user_id)\
+-            .execute()
+-
+-        # Paso B: Si hay nuevos proyectos, insertarlos
+-        if nuevos_proyectos_ids:
+-            # Preparamos los datos para insertar en lote
+-            rows_to_insert = [
+-                {'user_id': target_user_id, 'proyecto_id': pid} 
+-                for pid in nuevos_proyectos_ids
+-            ]
+-            supabase_proyectos.table('prod_acceso_proyectos').insert(rows_to_insert).execute()
+-
+-        return jsonify({'message': 'Permisos actualizados correctamente'}), 200
+-
+-    except Exception as e:
+-        print(f"❌ Error guardando permisos: {e}")
+-        return jsonify({'error': 'Error al guardar permisos en base de datos'}), 500
+\ No newline at end of file
+diff --git a/routes/usuarios.py b/routes/usuarios.py
+index 9ef186d..c86e015 100644
+--- a/routes/usuarios.py
++++ b/routes/usuarios.py
+@@ -2,187 +2,153 @@
+ Módulo de rutas para gestión de usuarios SSO
+ Contiene todos los endpoints API para CRUD de usuarios
+ """
+-from flask import Blueprint, request, session, jsonify, current_app
++from flask import Blueprint, request, session, jsonify
+ import bcrypt
+-import os
++from supabase import Client
+ 
+-# ⚠️ DEFINICIÓN DEL BLUEPRINT (Esto es lo que Python no encontraba)
+ usuarios_bp = Blueprint('usuarios', __name__, url_prefix='/api/admin')
+ 
+ def get_supabase_client():
+-    """Obtener cliente de Supabase desde la configuración global"""
+-    # Intentamos obtenerlo de la configuración de la app
+-    client = current_app.config.get('SUPABASE_CLIENT')
+-    if not client:
+-        # Fallback: Si por alguna razón no está en config, intentamos crearlo (aunque lo ideal es usar el de app)
+-        from supabase import create_client
+-        url = os.environ.get("SUPABASE_URL")
+-        key = os.environ.get("SUPABASE_KEY")
+-        if url and key:
+-            return create_client(url, key)
+-        raise ValueError("Cliente Supabase no inicializado en configuración")
+-    return client
++    """Obtener cliente de Supabase desde el contexto de la app"""
++    from flask import current_app
++    return current_app.config['SUPABASE_CLIENT']
+ 
+-def _current_user_db(session_email, sb):
+-    """Busca al usuario actual en la BD para verificar permisos frescos"""
++
++def _current_user_db(session_email: str, sb: Client):
++    """Return the current user record from DB by email or None."""
+     if not session_email:
+         return None
+     try:
+         resp = sb.table('usuarios_sso').select('*').eq('email', session_email).execute()
+         if resp.data:
+             return resp.data[0]
+-    except Exception as e:
+-        print(f"Error verificando usuario: {e}")
++    except Exception:
++        pass
+     return None
+ 
+-# --- RUTAS ---
+-
+ @usuarios_bp.route('/users', methods=['GET'])
+ def listar_usuarios():
+     """Listar todos los usuarios del sistema"""
++    # Verify the caller is a superuser using fresh DB data (avoid stale sessions)
++    sb = get_supabase_client()
++    current = _current_user_db(session.get('user_email'), sb)
++    if not current or not bool(current.get('is_superuser')):
++        return jsonify({'error': 'No autorizado - se requieren permisos de administrador'}), 403
++    
+     try:
+         sb = get_supabase_client()
+-        
+-        # 1. Verificar seguridad (Solo Superusuario)
+-        current = _current_user_db(session.get('user_email'), sb)
+-        if not current or not bool(current.get('is_superuser')):
+-            return jsonify({'error': 'No autorizado - Requiere permisos de Administrador'}), 403
+-    
+-        # 2. Obtener usuarios
+-        response = sb.table('usuarios_sso').select("*").order('email').execute()
+-        users = response.data or []
+-
+-        # 3. Formatear respuesta segura
+-        lista_usuarios = []
+-        for user in users:
+-            lista_usuarios.append({
+-                'id': user.get('id'),
+-                'email': user.get('email'),
+-                'is_superuser': bool(user.get('is_superuser')),
+-                'rol_ordenes': user.get('rol_ordenes'),
+-                'rol_fibra': user.get('rol_fibra'),
+-                'rol_flota': user.get('rol_flota'),
+-                'rol_herramientas': user.get('rol_herramientas'),
+-                'rol_logistica': user.get('rol_logistica'),
+-                'rol_produccion': user.get('rol_produccion', 'false') # Aseguramos que venga este campo
+-            })
+-
+-        return jsonify({'users': lista_usuarios}), 200
++        response = sb.table('usuarios_sso').select("*").execute()
++        return jsonify({'users': response.data})
+     except Exception as e:
+-        print(f"❌ Error listando usuarios: {e}")
+         return jsonify({'error': str(e)}), 500
+ 
+ @usuarios_bp.route('/users', methods=['POST'])
+ def crear_usuario():
+     """Crear un nuevo usuario"""
++    # Verify caller of create is superuser using fresh DB data
++    sb = get_supabase_client()
++    current = _current_user_db(session.get('user_email'), sb)
++    if not current or not bool(current.get('is_superuser')):
++        return jsonify({'error': 'No autorizado - se requieren permisos de administrador'}), 403
++    
++    data = request.get_json()
++    email = data.get('email')
++    password = data.get('password')
++    roles = data.get('roles', {})
++    
++    if not email or not password:
++        return jsonify({'error': 'Email y contraseña requeridos'}), 400
++    
+     try:
+         sb = get_supabase_client()
+         
+-        # 1. Verificar seguridad
+-        current = _current_user_db(session.get('user_email'), sb)
+-        if not current or not bool(current.get('is_superuser')):
+-            return jsonify({'error': 'No autorizado'}), 403
+-        
+-        data = request.get_json()
+-        email = data.get('email')
+-        password = data.get('password')
+-        roles = data.get('roles', {})
+-        
+-        if not email or not password:
+-            return jsonify({'error': 'Email y contraseña requeridos'}), 400
+-        
+-        # 2. Verificar duplicados
+-        existing = sb.table('usuarios_sso').select('id').eq('email', email).execute()
++        # Verificar si el usuario ya existe
++        existing = sb.table('usuarios_sso').select('*').eq('email', email).execute()
+         if existing.data:
+-            return jsonify({'error': 'El usuario ya existe'}), 400
++            return jsonify({'error': 'Usuario ya existe'}), 400
+         
+-        # 3. Hashear Password
++        # Hashear contraseña
+         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+         
+-        # 4. Insertar
++        # Crear usuario
++        # Allow creating is_superuser (boolean) but only if the caller is a superuser
++        is_super = bool(roles.get('admin', False))
+         new_user = {
+             'email': email,
+             'password_hash': password_hash,
+-            'is_superuser': bool(roles.get('admin', False)),
++            # Persist only is_superuser; avoid writing rol_admin to prevent errors
++            'is_superuser': is_super,
+             'rol_ordenes': roles.get('ordenes', 'false'),
+             'rol_fibra': roles.get('fibra', 'false'),
+             'rol_flota': roles.get('flota', 'false'),
+             'rol_herramientas': roles.get('herramientas', 'false'),
+-            'rol_logistica': roles.get('logistica', 'false'),
+-            'rol_produccion': roles.get('produccion', 'false')
++            'rol_logistica': roles.get('logistica', 'false')
+         }
+         
+         sb.table('usuarios_sso').insert(new_user).execute()
+         
+-        return jsonify({'message': 'Usuario creado exitosamente'}), 201
+-
++        return jsonify({'message': 'Usuario creado exitosamente'})
+     except Exception as e:
+-        print(f"❌ Error creando usuario: {e}")
+         return jsonify({'error': str(e)}), 500
+ 
+ @usuarios_bp.route('/users/<user_id>', methods=['PUT'])
+ def actualizar_usuario(user_id):
+     """Actualizar un usuario existente"""
++    # Verify caller of update is superuser using fresh DB data
++    sb = get_supabase_client()
++    current = _current_user_db(session.get('user_email'), sb)
++    if not current or not bool(current.get('is_superuser')):
++        return jsonify({'error': 'No autorizado - se requieren permisos de administrador'}), 403
++    
++    data = request.get_json()
++    email = data.get('email')
++    password = data.get('password')
++    roles = data.get('roles', {})
++    
+     try:
+         sb = get_supabase_client()
+         
+-        # 1. Verificar seguridad
+-        current = _current_user_db(session.get('user_email'), sb)
+-        if not current or not bool(current.get('is_superuser')):
+-            return jsonify({'error': 'No autorizado'}), 403
+-        
+-        data = request.get_json()
+-        password = data.get('password')
+-        roles = data.get('roles', {})
+-        
++        # Allow updating is_superuser (and rol_admin) when present in roles
+         update_data = {
++            'email': email,
+             'is_superuser': bool(roles.get('admin', False)),
+             'rol_ordenes': roles.get('ordenes', 'false'),
+             'rol_fibra': roles.get('fibra', 'false'),
+             'rol_flota': roles.get('flota', 'false'),
+             'rol_herramientas': roles.get('herramientas', 'false'),
+-            'rol_logistica': roles.get('logistica', 'false'),
+-            'rol_produccion': roles.get('produccion', 'false')
++            'rol_logistica': roles.get('logistica', 'false')
+         }
+         
+-        # Si cambiaron la password
+-        if password and password.strip():
++        # Si se proporciona nueva contraseña, actualizarla
++        if password:
+             update_data['password_hash'] = bcrypt.hashpw(
+                 password.encode('utf-8'), 
+                 bcrypt.gensalt()
+             ).decode('utf-8')
+         
+-        # Evitar auto-bloqueo (quitarse permisos a uno mismo)
+-        if str(user_id) == str(current.get('id')) and not update_data['is_superuser']:
+-            return jsonify({'error': 'No puedes revocar tu propio permiso de Superusuario'}), 400
++        # Prevent a user from revoking their own superuser status (would lock them out)
++        if str(user_id) == str(current.get('id')) and not update_data.get('is_superuser'):
++            return jsonify({'error': 'No puedes revocar tu propio rol de superusuario desde aquí'}), 400
+ 
+         sb.table('usuarios_sso').update(update_data).eq('id', user_id).execute()
+         
+-        return jsonify({'message': 'Usuario actualizado exitosamente'}), 200
+-
++        return jsonify({'message': 'Usuario actualizado exitosamente'})
+     except Exception as e:
+-        print(f"❌ Error actualizando usuario: {e}")
+         return jsonify({'error': str(e)}), 500
+ 
+ @usuarios_bp.route('/users/<user_id>', methods=['DELETE'])
+ def eliminar_usuario(user_id):
+     """Eliminar un usuario"""
++    # Verify caller of delete is superuser using fresh DB data
++    sb = get_supabase_client()
++    current = _current_user_db(session.get('user_email'), sb)
++    if not current or not bool(current.get('is_superuser')):
++        return jsonify({'error': 'No autorizado - se requieren permisos de administrador'}), 403
++    
+     try:
+         sb = get_supabase_client()
+-        
+-        # 1. Verificar seguridad
+-        current = _current_user_db(session.get('user_email'), sb)
+-        if not current or not bool(current.get('is_superuser')):
+-            return jsonify({'error': 'No autorizado'}), 403
+-
+-        # Evitar auto-eliminación
+-        if str(user_id) == str(current.get('id')):
+-             return jsonify({'error': 'No puedes eliminar tu propia cuenta'}), 400
+-        
+         sb.table('usuarios_sso').delete().eq('id', user_id).execute()
+         
+-        return jsonify({'message': 'Usuario eliminado exitosamente'}), 200
+-
++        return jsonify({'message': 'Usuario eliminado exitosamente'})
+     except Exception as e:
+-        print(f"❌ Error eliminando usuario: {e}")
+-        return jsonify({'error': str(e)}), 500
+\ No newline at end of file
++        return jsonify({'error': str(e)}), 500
