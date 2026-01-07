@@ -7,16 +7,22 @@ load_dotenv()
 
 proyectos_bp = Blueprint('proyectos', __name__)
 
+# Variables de conexión para la DB de proyectos
 url = os.environ.get("DB_PROYECTOS_URL")
 key = os.environ.get("DB_PROYECTOS_KEY")
 
+# Inicializamos el cliente de proyectos de forma segura. Si faltan las
+# variables NO interrumpimos el arranque de la aplicación: dejamos
+# `supabase_proyectos` en None y las rutas responderán de forma controlada.
+supabase_proyectos: Client | None = None
 if not url or not key:
-    print("❌ ERROR CRÍTICO: Faltan credenciales DB_PROYECTOS en .env")
-
-try:
-    supabase_proyectos: Client = create_client(url, key)
-except Exception as e:
-    print(f"❌ Error cliente Supabase: {e}")
+    print("⚠️ DB_PROYECTOS no configurada en .env. Algunas rutas devolverán respuestas vacías o 503.")
+else:
+    try:
+        supabase_proyectos = create_client(url, key)
+    except Exception as e:
+        print(f"❌ Error cliente Supabase: {e}")
+        supabase_proyectos = None
 
 # --- RUTAS DE LECTURA ---
 
@@ -25,6 +31,11 @@ def obtener_proyectos():
     try:
         if 'user_data' not in session:
             return jsonify({'error': 'No autorizado'}), 401
+
+        # Si el cliente de proyectos no está inicializado, devolvemos lista vacía
+        if supabase_proyectos is None:
+            print("⚠️ Acceso a /api/proyectos solicitado pero DB_PROYECTOS no está configurada.")
+            return jsonify([]), 200
 
         user = session['user_data']
         user_id = user.get('id')
@@ -75,6 +86,10 @@ def obtener_mis_accesos(user_id):
     Se usa para pre-cargar los checkboxes en el Modal de Edición.
     """
     try:
+        if supabase_proyectos is None:
+            print("⚠️ Petición a /api/mis-accesos pero DB_PROYECTOS no está configurada.")
+            return jsonify([]), 200
+
         response = supabase_proyectos.table('prod_acceso_proyectos')\
             .select('proyecto_id')\
             .eq('user_id', user_id)\
@@ -115,6 +130,11 @@ def asignar_proyectos_usuario():
             return jsonify({'error': 'Falta el ID del usuario objetivo'}), 400
 
         print(f"💾 Guardando permisos para {target_user_id}. IDs: {nuevos_proyectos_ids}")
+
+        # Si el cliente no está disponible, respondemos con error 503
+        if supabase_proyectos is None:
+            print("⚠️ Intento de guardar permisos pero DB_PROYECTOS no está configurada.")
+            return jsonify({'error': 'DB_PROYECTOS no configurada en el servidor'}), 503
 
         # 3. Transacción (Simulada)
         # Paso A: Borrar permisos antiguos de este usuario
