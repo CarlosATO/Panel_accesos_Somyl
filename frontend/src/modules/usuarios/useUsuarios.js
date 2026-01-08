@@ -26,9 +26,10 @@ export function useUsuarios() {
   const createUser = async (userData) => {
     try {
       setError('')
-      await usuariosService.create(userData)
+      const resp = await usuariosService.create(userData)
       await fetchUsers()
-      return { success: true }
+      // If backend returned created user, include it to allow assigning projects
+      return { success: true, user: resp?.user || null }
     } catch (err) {
       setError(err.message)
       return { success: false, error: err.message }

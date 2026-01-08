@@ -21,7 +21,7 @@ function UsuariosTable({ users, currentUserId, onEdit, onDelete }) {
         </span>
       )
     }
-    if (role === 'true' || role === true || role === 'usuario') {
+    if (role === 'true' || role === true) {
       return (
         <span 
           className="badge"
@@ -107,7 +107,7 @@ function UsuariosTable({ users, currentUserId, onEdit, onDelete }) {
                 background: '#f8fafc'
               }}
             >
-              Fibra
+              Construcción
             </th>
             <th 
               className="text-uppercase text-center" 
@@ -133,33 +133,7 @@ function UsuariosTable({ users, currentUserId, onEdit, onDelete }) {
                 background: '#f8fafc'
               }}
             >
-              Herramientas
-            </th>
-            <th 
-              className="text-uppercase text-center" 
-              style={{ 
-                padding: '16px 12px',
-                fontSize: '11px',
-                fontWeight: '700',
-                color: '#64748b',
-                letterSpacing: '0.5px',
-                background: '#f8fafc'
-              }}
-            >
               Logística
-            </th>
-            <th 
-              className="text-uppercase text-center" 
-              style={{ 
-                padding: '16px 12px',
-                fontSize: '11px',
-                fontWeight: '700',
-                color: '#64748b',
-                letterSpacing: '0.5px',
-                background: '#f8fafc'
-              }}
-            >
-              Producción
             </th>
             <th 
               className="text-uppercase text-end" 
@@ -238,19 +212,13 @@ function UsuariosTable({ users, currentUserId, onEdit, onDelete }) {
                 {getRoleBadge(user.rol_ordenes)}
               </td>
               <td className="text-center align-middle" style={{ padding: '16px 12px' }}>
-                {getRoleBadge(user.rol_fibra)}
+                {getRoleBadge(user.rol_produccion)}
               </td>
               <td className="text-center align-middle" style={{ padding: '16px 12px' }}>
                 {getRoleBadge(user.rol_flota)}
               </td>
               <td className="text-center align-middle" style={{ padding: '16px 12px' }}>
-                {getRoleBadge(user.rol_herramientas)}
-              </td>
-              <td className="text-center align-middle" style={{ padding: '16px 12px' }}>
                 {getRoleBadge(user.rol_logistica)}
-              </td>
-              <td className="text-center align-middle" style={{ padding: '16px 12px' }}>
-                {getRoleBadge(user.rol_produccion)}
               </td>
               <td className="text-end align-middle" style={{ padding: '16px 24px' }}>
                 <div className="d-flex justify-content-end gap-2">

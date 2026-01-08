@@ -1,30 +1,24 @@
 import { useState, useEffect } from 'react'
 import { Modal, Button, Form } from 'react-bootstrap'
+import { usuariosService } from '../usuariosService'
 
 function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
-  // Estado del formulario de usuario
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     roles: {
       admin: false,
       ordenes: 'false',
-      fibra: 'false',
       flota: 'false',
-      herramientas: 'false',
-      logistica: 'false',
-      produccion: 'false'
+      produccion: 'false',
+      logistica: 'false'
     }
   })
   const [showPassword, setShowPassword] = useState(false)
-
-  // Estados para la gestión de proyectos (Producción)
-  const [projects, setProjects] = useState([]) // Todos los proyectos disponibles
-  const [selectedProjects, setSelectedProjects] = useState([]) // IDs seleccionados
+  const [projects, setProjects] = useState([])
+  const [selectedProjects, setSelectedProjects] = useState(new Set())
   const [loadingProjects, setLoadingProjects] = useState(false)
-  const [isSaving, setIsSaving] = useState(false) // Nuevo estado para bloquear el botón mientras guarda
 
-  // 1. Cargar datos del usuario al abrir modal
   useEffect(() => {
     if (editingUser) {
       setFormData({
@@ -33,120 +27,59 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
         roles: {
           admin: editingUser.is_superuser || editingUser.rol_admin || false,
           ordenes: String(editingUser.rol_ordenes || 'false'),
-          fibra: String(editingUser.rol_fibra || 'false'),
           flota: String(editingUser.rol_flota || 'false'),
-          herramientas: String(editingUser.rol_herramientas || 'false'),
-          logistica: String(editingUser.rol_logistica || 'false'),
-          produccion: String(editingUser.rol_produccion || 'false')
+          produccion: String(editingUser.rol_produccion || 'false'),
+            logistica: String(editingUser.rol_logistica || 'false')
         }
       })
-      // Si ya viene con rol de usuario, cargar sus proyectos
-      if (String(editingUser.rol_produccion) === 'true' || String(editingUser.rol_produccion) === 'usuario') {
-        fetchUserProjects(editingUser.id)
-      } else {
-        setSelectedProjects([])
-      }
+      ;(async () => {
+        setLoadingProjects(true)
+        try {
+          const resp = await fetch('/api/proyectos', { credentials: 'include' })
+          const proyectos = resp.ok ? await resp.json() : []
+          setProjects(proyectos || [])
+
+          const accesosResp = await fetch(`/api/mis-accesos/${editingUser.id}`, { credentials: 'include' })
+          const accesos = accesosResp.ok ? await accesosResp.json() : []
+          setSelectedProjects(new Set(accesos || []))
+        } catch (e) {
+          setProjects([])
+          setSelectedProjects(new Set())
+        } finally {
+          setLoadingProjects(false)
+        }
+      })()
     } else {
-      // Usuario Nuevo
       setFormData({
         email: '',
         password: '',
         roles: {
           admin: false,
           ordenes: 'false',
-          fibra: 'false',
           flota: 'false',
-          herramientas: 'false',
-          logistica: 'false',
-          produccion: 'false'
+          produccion: 'false',
+            logistica: 'false'
         }
       })
-      setSelectedProjects([])
     }
     setShowPassword(false)
-    setIsSaving(false)
   }, [editingUser, show])
 
-  // 2. Cargar lista maestra de proyectos (Solo si es necesario)
-  useEffect(() => {
-    // Si el modal está abierto y el rol seleccionado es 'usuario'/'true', cargamos la lista
-    if (show && (formData.roles.produccion === 'true' || formData.roles.produccion === 'usuario')) {
-      fetchAllProjects()
-    }
-  }, [show, formData.roles.produccion])
-
-  // --- FUNCIONES DE API PARA PROYECTOS ---
-
-  const fetchAllProjects = async () => {
-    try {
-      setLoadingProjects(true)
-      const response = await fetch('/api/proyectos', { credentials: 'include' })
-      if (response.ok) {
-        const data = await response.json()
-        setProjects(data)
-      }
-    } catch (error) {
-      console.error("Error cargando proyectos:", error)
-    } finally {
-      setLoadingProjects(false)
-    }
-  }
-
-  const fetchUserProjects = async (userId) => {
-    try {
-      const response = await fetch(`/api/mis-accesos/${userId}`, { credentials: 'include' })
-      if (response.ok) {
-        const ids = await response.json()
-        setSelectedProjects(ids)
-      }
-    } catch (error) {
-      console.error("Error cargando permisos:", error)
-    }
-  }
-
-  // Modificado para que retorne una Promesa y lance error si falla
-  const saveProjectPermissions = async (userId, projectIds) => {
-    console.log(`💾 Enviando permisos a Python. Usuario: ${userId}, Proyectos: ${projectIds}`);
-    const response = await fetch('/api/admin/asignar-proyectos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: userId,
-        proyectos_ids: projectIds
-      }),
-      credentials: 'include'
-    })
-    
-    if (!response.ok) {
-      throw new Error('Error en la respuesta del servidor al guardar proyectos')
-    }
-    console.log("✅ Permisos guardados correctamente en BD");
-  }
-
-  // --- MANEJADORES DE EVENTOS ---
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
-    setIsSaving(true) // Bloqueamos botones para evitar doble click
-
-    try {
-      // 1. CRUCIAL: Primero guardamos los proyectos (Si estamos editando y es usuario de producción)
-      const shouldSaveProjects = editingUser && (formData.roles.produccion === 'true' || formData.roles.produccion === 'usuario');
-
-      if (shouldSaveProjects) {
-         // Esperamos explícitamente a que esto termine antes de seguir
-         await saveProjectPermissions(editingUser.id, selectedProjects)
+    ;(async () => {
+      const result = await onSave(formData)
+      try {
+        if (result && result.success) {
+          const targetId = editingUser ? editingUser.id : (result.user && result.user.id)
+          if (targetId) {
+            await usuariosService.assignProjects(targetId, Array.from(selectedProjects))
+          }
+        }
+      } catch (err) {
+        console.error('Error asignando proyectos:', err)
       }
-
-      // 2. Si los proyectos se guardaron bien (o no era necesario), guardamos el usuario
-      // Esta función (onSave) es la que cierra el modal al final
-      await onSave(formData)
-
-    } catch (error) {
-      console.error("❌ Error grave al guardar:", error)
-      alert("Hubo un error al guardar los permisos. Verifica que el servidor Python esté corriendo.")
-      setIsSaving(false) // Desbloqueamos si hubo error
-    }
+    })()
   }
 
   const handleRoleChange = (role, value) => {
@@ -159,40 +92,29 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
     }))
   }
 
-  const handleProjectToggle = (projectId) => {
+  const apps = [
+    { key: 'ordenes', name: 'Órdenes de Pago', icon: 'bi-receipt-cutoff', color: '#0d9488' },
+    { key: 'flota', name: 'Control Flota', icon: 'bi-truck', color: '#06b6d4' },
+    { key: 'produccion', name: 'Construcción', icon: 'bi-buildings', color: '#7c3aed' },
+    { key: 'logistica', name: 'Logística', icon: 'bi-box-seam', color: '#f59e0b' },
+    
+  ]
+
+  const toggleProject = (pid) => {
     setSelectedProjects(prev => {
-      if (prev.includes(projectId)) {
-        return prev.filter(id => id !== projectId)
-      } else {
-        return [...prev, projectId]
-      }
+      const copy = new Set(prev)
+      if (copy.has(pid)) copy.delete(pid)
+      else copy.add(pid)
+      return copy
     })
   }
 
-  const handleSelectAllProjects = () => {
-    if (selectedProjects.length === projects.length) {
-      setSelectedProjects([])
-    } else {
-      setSelectedProjects(projects.map(p => p.id))
-    }
-  }
-
-  const apps = [
-    { key: 'ordenes', name: 'Órdenes de Pago', icon: 'bi-receipt-cutoff', color: '#0d9488' },
-    { key: 'fibra', name: 'Gestión Fibra', icon: 'bi-diagram-3', color: '#14b8a6' },
-    { key: 'flota', name: 'Control Flota', icon: 'bi-truck', color: '#06b6d4' },
-    { key: 'logistica', name: 'Logística', icon: 'bi-box-seam', color: '#f59e0b' },
-    { key: 'produccion', name: 'Producción', icon: 'bi-hammer', color: '#fb923c' },
-    { key: 'herramientas', name: 'Herramientas', icon: 'bi-tools', color: '#64748b' }
-  ]
-
   const isSelf = editingUser && String(editingUser.id) === String(currentUserId)
-  const showProjectSelector = (formData.roles.produccion === 'true' || formData.roles.produccion === 'usuario')
 
   return (
     <Modal 
       show={show} 
-      onHide={!isSaving ? onHide : undefined} // Evita cerrar si está guardando
+      onHide={onHide} 
       size="lg" 
       centered
       backdrop="static"
@@ -232,7 +154,6 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
             type="button"
             className="btn-close"
             onClick={onHide}
-            disabled={isSaving}
             style={{ position: 'absolute', right: '24px', top: '24px' }}
           ></button>
         </Modal.Header>
@@ -258,17 +179,30 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
                   Correo electrónico
                 </label>
                 <div className="input-group">
-                  <span className="input-group-text" style={{ background: 'white', borderRight: 'none', color: '#94a3b8' }}>
+                  <span 
+                    className="input-group-text"
+                    style={{ 
+                      background: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderRight: 'none',
+                      color: '#94a3b8'
+                    }}
+                  >
                     <i className="bi bi-envelope"></i>
                   </span>
                   <input
                     type="email"
                     className="form-control"
                     value={formData.email}
+                    placeholder="usuario@empresa.com"
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
-                    disabled={isSaving}
-                    style={{ borderLeft: 'none' }}
+                    style={{
+                      border: '1px solid #e2e8f0',
+                      borderLeft: 'none',
+                      padding: '12px 16px',
+                      fontSize: '14px'
+                    }}
                   />
                 </div>
               </div>
@@ -278,7 +212,15 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
                   Contraseña {editingUser && <span style={{ color: '#94a3b8', fontWeight: '400' }}>(dejar vacío para mantener)</span>}
                 </label>
                 <div className="input-group">
-                  <span className="input-group-text" style={{ background: 'white', borderRight: 'none', color: '#94a3b8' }}>
+                  <span 
+                    className="input-group-text"
+                    style={{ 
+                      background: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderRight: 'none',
+                      color: '#94a3b8'
+                    }}
+                  >
                     <i className="bi bi-lock"></i>
                   </span>
                   <input
@@ -288,15 +230,25 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
                     placeholder={editingUser ? '••••••••' : 'Mínimo 8 caracteres'}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required={!editingUser}
-                    disabled={isSaving}
-                    style={{ borderLeft: 'none', borderRight: 'none' }}
+                    style={{
+                      border: '1px solid #e2e8f0',
+                      borderLeft: 'none',
+                      borderRight: 'none',
+                      padding: '12px 16px',
+                      fontSize: '14px'
+                    }}
                   />
                   <button
                     type="button"
                     className="input-group-text"
                     onClick={() => setShowPassword(!showPassword)}
-                    disabled={isSaving}
-                    style={{ background: 'white', borderLeft: 'none', cursor: 'pointer' }}
+                    style={{ 
+                      background: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderLeft: 'none',
+                      color: '#94a3b8',
+                      cursor: 'pointer'
+                    }}
                   >
                     <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
                   </button>
@@ -306,24 +258,60 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
           </div>
 
           {/* Superusuario */}
-          <div className="p-4 mb-4" style={{ background: formData.roles.admin ? '#f0fdfa' : '#f8fafc', borderRadius: '12px', border: formData.roles.admin ? '1px solid #99f6e4' : '1px solid #e2e8f0' }}>
+          <div 
+            className="p-4 mb-4"
+            style={{ 
+              background: formData.roles.admin ? '#f0fdfa' : '#f8fafc', 
+              borderRadius: '12px',
+              border: formData.roles.admin ? '1px solid #99f6e4' : '1px solid #e2e8f0',
+              transition: 'all 0.2s'
+            }}
+          >
             <div className="d-flex align-items-start gap-3">
-              <div className="form-check form-switch" style={{ paddingLeft: '0' }}>
+              <div 
+                className="form-check form-switch"
+                style={{ paddingLeft: '0' }}
+              >
                 <input
                   type="checkbox"
                   className="form-check-input"
                   id="superuser-switch"
                   checked={!!formData.roles.admin}
-                  disabled={isSelf || isSaving}
+                  disabled={isSelf}
                   onChange={(e) => handleRoleChange('admin', e.target.checked)}
-                  style={{ width: '44px', height: '24px', cursor: isSelf || isSaving ? 'not-allowed' : 'pointer', marginLeft: 0 }}
+                  style={{
+                    width: '44px',
+                    height: '24px',
+                    cursor: isSelf ? 'not-allowed' : 'pointer',
+                    marginLeft: 0
+                  }}
                 />
               </div>
               <div className="flex-grow-1">
-                <label htmlFor="superuser-switch" className="form-check-label d-flex align-items-center gap-2 mb-1" style={{ fontWeight: '600', color: '#0f172a' }}>
+                <label 
+                  htmlFor="superuser-switch" 
+                  className="form-check-label d-flex align-items-center gap-2 mb-1"
+                  style={{ 
+                    fontWeight: '600', 
+                    color: '#0f172a',
+                    cursor: isSelf ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  <i className="bi bi-shield-check" style={{ color: '#0d9488' }}></i>
                   Superusuario
                 </label>
-                <p className="mb-0 text-muted" style={{ fontSize: '13px' }}>Acceso completo al panel de administración.</p>
+                <p className="mb-0" style={{ fontSize: '13px', color: '#64748b' }}>
+                  Acceso completo al panel de administración y gestión de usuarios
+                </p>
+                {isSelf && (
+                  <div 
+                    className="mt-2 d-flex align-items-center gap-2"
+                    style={{ fontSize: '12px', color: '#f59e0b' }}
+                  >
+                    <i className="bi bi-info-circle"></i>
+                    No puedes modificar tu propio rol de superusuario
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -340,12 +328,31 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
                 const currentValue = String(formData.roles[app.key])
                 return (
                   <div key={app.key} className="col-md-6">
-                    <div className="p-3 h-100" style={{ background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                    <div 
+                      className="p-3 h-100"
+                      style={{ 
+                        background: '#f8fafc', 
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0'
+                      }}
+                    >
                       <div className="d-flex align-items-center gap-2 mb-3">
-                        <div className="d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px', borderRadius: '8px', background: app.color, color: 'white' }}>
+                        <div
+                          className="d-flex align-items-center justify-content-center"
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '8px',
+                            background: app.color,
+                            color: 'white',
+                            fontSize: '14px'
+                          }}
+                        >
                           <i className={`bi ${app.icon}`}></i>
                         </div>
-                        <span style={{ fontWeight: '600', color: '#0f172a', fontSize: '14px' }}>{app.name}</span>
+                        <span style={{ fontWeight: '600', color: '#0f172a', fontSize: '14px' }}>
+                          {app.name}
+                        </span>
                       </div>
                       
                       <div className="d-flex gap-2">
@@ -359,14 +366,15 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
                             type="button"
                             className="btn btn-sm flex-fill"
                             onClick={() => handleRoleChange(app.key, option.value)}
-                            disabled={isSaving}
                             style={{
                               background: currentValue === option.value ? option.bg : 'white',
                               color: currentValue === option.value ? option.color : '#94a3b8',
                               border: `1.5px solid ${currentValue === option.value ? option.border : '#e2e8f0'}`,
                               borderRadius: '8px',
                               fontSize: '12px',
-                              fontWeight: currentValue === option.value ? '600' : '500'
+                              fontWeight: currentValue === option.value ? '600' : '500',
+                              padding: '8px 4px',
+                              transition: 'all 0.2s'
                             }}
                           >
                             {option.label}
@@ -379,113 +387,74 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
               })}
             </div>
           </div>
-
-          {/* --- SECCIÓN NUEVA: ASIGNACIÓN DE PROYECTOS --- */}
-          {editingUser && showProjectSelector && (
-            <div className="mt-4 pt-4 border-top">
-              <div className="d-flex align-items-center justify-content-between mb-3">
-                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ color: '#fb923c', fontWeight: '700' }}>
-                  <i className="bi bi-hammer"></i>
-                  Acceso a Proyectos (Producción)
-                </h6>
-                <button 
-                  type="button" 
-                  className="btn btn-sm btn-link text-decoration-none"
-                  onClick={handleSelectAllProjects}
-                  disabled={isSaving}
-                  style={{ fontSize: '13px', color: '#fb923c' }}
-                >
-                  {selectedProjects.length === projects.length ? 'Desmarcar todos' : 'Marcar todos'}
-                </button>
-              </div>
-
-              {loadingProjects ? (
-                <div className="text-center py-3 text-muted">Cargando proyectos...</div>
-              ) : projects.length === 0 ? (
-                <div className="alert alert-warning">No hay proyectos disponibles en el sistema.</div>
-              ) : (
-                <div 
-                  className="p-3" 
-                  style={{ 
-                    background: '#fff7ed', 
-                    borderRadius: '12px', 
-                    border: '1px solid #ffedd5',
-                    maxHeight: '200px',
-                    overflowY: 'auto'
-                  }}
-                >
-                  <div className="row g-2">
-                    {projects.map(project => (
-                      <div className="col-md-6" key={project.id}>
-                        <div className="form-check">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id={`proj-${project.id}`}
-                            checked={selectedProjects.includes(project.id)}
-                            onChange={() => handleProjectToggle(project.id)}
-                            disabled={isSaving}
-                            style={{ cursor: 'pointer', borderColor: '#fdba74' }}
-                          />
-                          <label 
-                            className="form-check-label" 
-                            htmlFor={`proj-${project.id}`}
-                            style={{ fontSize: '13px', color: '#431407', cursor: 'pointer' }}
-                          >
-                            {project.proyecto}
-                          </label>
-                        </div>
-                      </div>
-                    ))}
+          {/* Accesos a Construcción */}
+          <div className="mt-4">
+            <h6 className="mb-3 d-flex align-items-center gap-2" style={{ color: '#475569', fontWeight: '600' }}>
+              <i className="bi bi-building"></i>
+              Accesos a Construcción
+            </h6>
+            {loadingProjects ? (
+              <div>Cargando proyectos...</div>
+            ) : (
+              <div className="row g-2">
+                {projects.length === 0 ? (
+                  <div className="col-12 text-muted">No hay proyectos disponibles</div>
+                ) : projects.map(p => (
+                  <div key={p.id} className="col-md-6">
+                    <div className="form-check p-3" style={{ background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <input className="form-check-input" type="checkbox" checked={selectedProjects.has(p.id)} onChange={() => toggleProject(p.id)} id={`proj-${p.id}`} />
+                      <label className="form-check-label ms-2" htmlFor={`proj-${p.id}`}>{p.proyecto || p.nombre || `#${p.id}`}</label>
+                    </div>
                   </div>
-                </div>
-              )}
-              <div className="form-text mt-2">
-                <i className="bi bi-info-circle me-1"></i>
-                Selecciona los proyectos que este usuario podrá ver y gestionar.
+                ))}
               </div>
-            </div>
-          )}
-
-          {!editingUser && showProjectSelector && (
-            <div className="mt-4 alert alert-info">
-              <i className="bi bi-info-circle-fill me-2"></i>
-              Para asignar proyectos específicos, primero crea el usuario y luego edítalo.
-            </div>
-          )}
-
+            )}
+          </div>
         </Modal.Body>
 
         {/* Footer */}
-        <Modal.Footer className="border-0" style={{ padding: '16px 24px 24px', gap: '12px' }}>
+        <Modal.Footer 
+          className="border-0"
+          style={{ padding: '16px 24px 24px', gap: '12px' }}
+        >
           <Button 
             variant="light" 
-            onClick={onHide} 
-            disabled={isSaving}
-            style={{ padding: '12px 24px', borderRadius: '10px' }}
+            onClick={onHide}
+            style={{
+              padding: '12px 24px',
+              borderRadius: '10px',
+              fontWeight: '500',
+              border: '1px solid #e2e8f0',
+              color: '#475569'
+            }}
           >
             Cancelar
           </Button>
           <Button 
             type="submit"
-            disabled={isSaving}
             style={{
-              background: editingUser ? 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)' : 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)',
+              background: editingUser 
+                ? 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)'
+                : 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)',
               border: 'none',
               padding: '12px 32px',
               borderRadius: '10px',
               fontWeight: '600',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              opacity: isSaving ? 0.7 : 1
+              boxShadow: editingUser 
+                ? '0 4px 12px rgba(245, 158, 11, 0.3)'
+                : '0 4px 12px rgba(13, 148, 136, 0.3)'
             }}
           >
-            {isSaving ? (
+            {editingUser ? (
               <>
-                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                Guardando...
+                <i className="bi bi-check-lg me-2"></i>
+                Guardar Cambios
               </>
             ) : (
-              editingUser ? <><i className="bi bi-check-lg me-2"></i>Guardar Cambios</> : <><i className="bi bi-plus-lg me-2"></i>Crear Usuario</>
+              <>
+                <i className="bi bi-plus-lg me-2"></i>
+                Crear Usuario
+              </>
             )}
           </Button>
         </Modal.Footer>

@@ -13,9 +13,9 @@ function Admin({ user }) {
     roles: {
       admin: false,
       ordenes: false,
-      fibra: false,
-      flota: false,
-      herramientas: false
+        flota: false,
+        produccion: false,
+        logistica: false
     }
   })
 
@@ -47,9 +47,9 @@ function Admin({ user }) {
         roles: {
           admin: user.is_superuser || user.rol_admin || false,
           ordenes: user.rol_ordenes || false,
-          fibra: user.rol_fibra || false,
-          flota: user.rol_flota || false,
-          herramientas: user.rol_herramientas || false
+            flota: user.rol_flota || false,
+            produccion: user.rol_produccion || false,
+            logistica: user.rol_logistica || false
         }
       })
     } else {
@@ -59,9 +59,9 @@ function Admin({ user }) {
         roles: {
           admin: false,
           ordenes: false,
-          fibra: false,
-          flota: false,
-          herramientas: false
+            flota: false,
+            produccion: false,
+            logistica: false
         }
       })
     }
@@ -166,12 +166,11 @@ function Admin({ user }) {
                     <th>Email</th>
                     <th>Admin</th>
                     <th>Órdenes</th>
-                    <th>Fibra</th>
                     <th>Flota</th>
-                    <th>Herramientas</th>
+                    <th>Logística</th>
                     <th>Acciones</th>
                   </tr>
-                </thead>
+                  <th>Construcción</th>
                 <tbody>
                   {users.map(u => (
                     <tr key={u.id}>
@@ -179,14 +178,14 @@ function Admin({ user }) {
                       <td>{u.email}</td>
                       <td>{(u.is_superuser || u.rol_admin) ? 'Sí' : 'No'}</td>
                       <td>{u.rol_ordenes ? 'Sí' : 'No'}</td>
-                      <td>{u.rol_fibra ? 'Sí' : 'No'}</td>
                       <td>{u.rol_flota ? 'Sí' : 'No'}</td>
-                      <td>{u.rol_herramientas ? 'Sí' : 'No'}</td>
+                      <td>{u.rol_logistica ? 'Sí' : 'No'}</td>
                       <td>
                         <Button
                           variant="outline-warning"
                           size="sm"
                           className="me-2"
+                    <td>{u.rol_produccion ? 'Sí' : 'No'}</td>
                           onClick={() => handleShowModal(u)}
                         >
                           <i className="bi bi-pencil"></i>

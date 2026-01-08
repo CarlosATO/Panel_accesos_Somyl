@@ -61,4 +61,22 @@ export const usuariosService = {
     
     return await response.json()
   }
+
+  ,
+
+  async assignProjects(userId, proyectosIds = []) {
+    const response = await fetch('/api/admin/asignar-proyectos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ user_id: userId, proyectos_ids: proyectosIds })
+    })
+
+    if (!response.ok) {
+      const err = await response.json()
+      throw new Error(err.error || 'Error al asignar proyectos')
+    }
+
+    return await response.json()
+  }
 }
