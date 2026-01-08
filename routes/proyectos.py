@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, session, request
 from supabase import create_client, Client
 import os
+import jwt
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,6 +11,7 @@ proyectos_bp = Blueprint('proyectos', __name__)
 # Variables de conexión para la DB de proyectos
 url = os.environ.get("DB_PROYECTOS_URL")
 key = os.environ.get("DB_PROYECTOS_KEY")
+JWT_SECRET = os.getenv("JWT_SECRET_KEY", "somyl-jwt-secret-key-2024")
 
 # Inicializamos el cliente de proyectos de forma segura. Si faltan las
 # variables NO interrumpimos el arranque de la aplicación: dejamos
@@ -24,12 +26,48 @@ else:
         print(f"❌ Error cliente Supabase: {e}")
         supabase_proyectos = None
 
+# Helper para obtener usuario desde JWT o sesión
+def get_authenticated_user():
+    """
+    Obtiene el usuario desde:
+    1. Header Authorization (Bearer token) - para módulos externos
+    2. Session (para portal web)
+    
+    Returns: dict con user_data o None
+    """
+    # 1. Intentar desde Authorization header
+    auth_header = request.headers.get('Authorization')
+    if auth_header and auth_header.startswith('Bearer '):
+        token = auth_header.split(' ')[1]
+        try:
+            decoded = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            # Reconstruir user_data similar a lo que hay en session
+            return {
+                'id': decoded.get('sub'),
+                'email': decoded.get('email'),
+                'is_superuser': decoded.get('roles', {}).get('admin') == 'true',
+                'rol_produccion': decoded.get('roles', {}).get('produccion', 'false')
+            }
+        except jwt.ExpiredSignatureError:
+            print("⚠️ Token expirado")
+            return None
+        except Exception as e:
+            print(f"⚠️ Error decodificando token: {e}")
+            return None
+    
+    # 2. Intentar desde session (portal web)
+    if 'user_data' in session:
+        return session['user_data']
+    
+    return None
+
 # --- RUTAS DE LECTURA ---
 
 @proyectos_bp.route('/api/proyectos', methods=['GET'])
 def obtener_proyectos():
     try:
-        if 'user_data' not in session:
+        user = get_authenticated_user()
+        if not user:
             return jsonify({'error': 'No autorizado'}), 401
 
         # Si el cliente de proyectos no está inicializado, devolvemos lista vacía
@@ -37,7 +75,6 @@ def obtener_proyectos():
             print("⚠️ Acceso a /api/proyectos solicitado pero DB_PROYECTOS no está configurada.")
             return jsonify([]), 200
 
-        user = session['user_data']
         user_id = user.get('id')
         
         # 1. Roles y Banderas
@@ -86,6 +123,10 @@ def obtener_mis_accesos(user_id):
     Se usa para pre-cargar los checkboxes en el Modal de Edición.
     """
     try:
+        user = get_authenticated_user()
+        if not user:
+            return jsonify({'error': 'No autorizado'}), 401
+            
         if supabase_proyectos is None:
             print("⚠️ Petición a /api/mis-accesos pero DB_PROYECTOS no está configurada.")
             return jsonify([]), 200
