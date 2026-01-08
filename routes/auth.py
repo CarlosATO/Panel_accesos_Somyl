@@ -100,7 +100,8 @@ def dashboard():
             'fibra': user['rol_fibra'],
             'flota': user['rol_flota'],
             'herramientas': user['rol_herramientas'],
-            'logistica': user['rol_logistica']
+            'logistica': user['rol_logistica'],
+            'produccion': user.get('rol_produccion', 'false')  # ✅ Agregar rol producción
         },
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=8)
     }
