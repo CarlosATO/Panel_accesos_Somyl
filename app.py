@@ -27,7 +27,12 @@ load_dotenv()
 # Serve React build files from frontend/dist so the SPA can occupy the old portal URL
 static_dir = os.path.join(os.path.dirname(__file__), 'frontend', 'dist')
 app = Flask(__name__, static_folder=static_dir, template_folder='templates')
-CORS(app, supports_credentials=True, origins=['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5180'])
+CORS(app, supports_credentials=True, origins=[
+    'http://localhost:5173',  # Portal frontend dev
+    'http://localhost:5174',  # Logística dev
+    'http://localhost:5180',  # Construcción dev
+    'https://produccionsomyl2026-production.up.railway.app',  # Construcción producción
+])
 
 # Asegura que exista una secret key para usar la sesión y mensajes flash.
 app.secret_key = os.getenv("SECRET_KEY")
