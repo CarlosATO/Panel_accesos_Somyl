@@ -50,7 +50,7 @@ function Dashboard({ user, setUser }) {
           <div className="spinner-border text-primary" role="status" style={{ width: '3rem', height: '3rem', color: '#0d9488 !important' }}>
             <span className="visually-hidden">Cargando...</span>
           </div>
-          <p className="mt-3 text-muted">Cargando aplicaciones...</p>
+          <p className="mt-3 text-muted">Cargando Modulos...</p>
         </div>
       </div>
     )
@@ -217,7 +217,7 @@ function Dashboard({ user, setUser }) {
                   }}
                 >
                   <i className="bi bi-people" style={{ fontSize: '18px', width: '24px' }}></i>
-                  Usuarios SSO
+                  Usuarios & Permisos
                 </button>
               </>
             )}
@@ -255,10 +255,10 @@ function Dashboard({ user, setUser }) {
         <div className="flex-grow-1 p-4 p-lg-5" style={{ maxWidth: '1400px' }}>
           <div className="mb-5">
             <h1 className="mb-2" style={{ color: '#0f172a', fontWeight: '700', fontSize: '28px' }}>
-              Aplicaciones Empresariales
+              Modulos Empresariales
             </h1>
             <p style={{ color: '#64748b', fontSize: '15px', margin: 0 }}>
-              Accede a tus herramientas de trabajo de forma centralizada
+              Accede a tus modulos de trabajo de forma centralizada
             </p>
           </div>
 
@@ -411,7 +411,7 @@ function Dashboard({ user, setUser }) {
           {filteredApps.length === 0 && (
             <div className="text-center py-5">
               <i className="bi bi-inbox" style={{ fontSize: '64px', color: '#cbd5e1' }}></i>
-              <p className="text-muted mt-3 mb-0">No hay aplicaciones en esta categoría</p>
+              <p className="text-muted mt-3 mb-0">No hay Modulos en esta categoría</p>
             </div>
           )}
         </div>
