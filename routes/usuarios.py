@@ -83,7 +83,8 @@ def crear_usuario():
             'rol_flota': roles.get('flota', 'false'),
             'rol_herramientas': roles.get('herramientas', 'false'),
             'rol_produccion': roles.get('produccion', 'false'),
-            'rol_logistica': roles.get('logistica', 'false')
+            'rol_logistica': roles.get('logistica', 'false'),
+            'rol_rrhh': roles.get('rrhh', 'false')
         }
         resp = sb.table('usuarios_sso').insert(new_user).execute()
 
@@ -119,7 +120,8 @@ def actualizar_usuario(user_id):
                 'rol_flota': roles.get('flota', 'false'),
                 'rol_herramientas': roles.get('herramientas', 'false'),
                 'rol_produccion': roles.get('produccion', 'false'),
-                'rol_logistica': roles.get('logistica', 'false')
+                'rol_logistica': roles.get('logistica', 'false'),
+                'rol_rrhh': roles.get('rrhh', 'false')
         }
         
         # Si se proporciona nueva contraseña, actualizarla

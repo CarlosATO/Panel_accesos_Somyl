@@ -41,6 +41,11 @@ if not app.secret_key:
     app.secret_key = secrets.token_urlsafe(24)
     print("WARNING: SECRET_KEY no encontrada en .env — usando clave temporal (cambiar para producción)")
 
+# Configuración de cookies de sesión para funcionar con Vite proxy
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SECURE'] = False  # False para desarrollo local (http)
+
 # 1. Conexión a la Base de Datos Central
 url: str = os.getenv("SUPABASE_URL")
 key: str = os.getenv("SUPABASE_KEY")
@@ -158,6 +163,5 @@ def spa_catch_all(path):
     return "React build not found. Run `cd frontend && npm run build` and place the output in frontend/dist.", 500
 
 if __name__ == '__main__':
-    # Fija explícitamente el puerto por defecto a 5001 (5000 ocupado)
-    # Si necesitas otro puerto manualmente, cambia aquí o usa un proxy/reverse-proxy.
-    app.run(port=5001, debug=True)
+    # Portal SSO usa puerto 5000 para evitar conflicto con módulo ordenes_pago (5001)
+    app.run(port=5000, debug=True)

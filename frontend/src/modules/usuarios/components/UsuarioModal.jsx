@@ -11,7 +11,8 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
       ordenes: 'false',
       flota: 'false',
       produccion: 'false',
-      logistica: 'false'
+      logistica: 'false',
+      rrhh: 'false'
     }
   })
   const [showPassword, setShowPassword] = useState(false)
@@ -29,26 +30,27 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
           ordenes: String(editingUser.rol_ordenes || 'false'),
           flota: String(editingUser.rol_flota || 'false'),
           produccion: String(editingUser.rol_produccion || 'false'),
-            logistica: String(editingUser.rol_logistica || 'false')
+          logistica: String(editingUser.rol_logistica || 'false'),
+          rrhh: String(editingUser.rol_rrhh || 'false')
         }
       })
-      ;(async () => {
-        setLoadingProjects(true)
-        try {
-          const resp = await fetch('/api/proyectos', { credentials: 'include' })
-          const proyectos = resp.ok ? await resp.json() : []
-          setProjects(proyectos || [])
+        ; (async () => {
+          setLoadingProjects(true)
+          try {
+            const resp = await fetch('/api/proyectos', { credentials: 'include' })
+            const proyectos = resp.ok ? await resp.json() : []
+            setProjects(proyectos || [])
 
-          const accesosResp = await fetch(`/api/mis-accesos/${editingUser.id}`, { credentials: 'include' })
-          const accesos = accesosResp.ok ? await accesosResp.json() : []
-          setSelectedProjects(new Set(accesos || []))
-        } catch (e) {
-          setProjects([])
-          setSelectedProjects(new Set())
-        } finally {
-          setLoadingProjects(false)
-        }
-      })()
+            const accesosResp = await fetch(`/api/mis-accesos/${editingUser.id}`, { credentials: 'include' })
+            const accesos = accesosResp.ok ? await accesosResp.json() : []
+            setSelectedProjects(new Set(accesos || []))
+          } catch (e) {
+            setProjects([])
+            setSelectedProjects(new Set())
+          } finally {
+            setLoadingProjects(false)
+          }
+        })()
     } else {
       setFormData({
         email: '',
@@ -58,7 +60,8 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
           ordenes: 'false',
           flota: 'false',
           produccion: 'false',
-            logistica: 'false'
+          logistica: 'false',
+          rrhh: 'false'
         }
       })
     }
@@ -67,19 +70,19 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    ;(async () => {
-      const result = await onSave(formData)
-      try {
-        if (result && result.success) {
-          const targetId = editingUser ? editingUser.id : (result.user && result.user.id)
-          if (targetId) {
-            await usuariosService.assignProjects(targetId, Array.from(selectedProjects))
+      ; (async () => {
+        const result = await onSave(formData)
+        try {
+          if (result && result.success) {
+            const targetId = editingUser ? editingUser.id : (result.user && result.user.id)
+            if (targetId) {
+              await usuariosService.assignProjects(targetId, Array.from(selectedProjects))
+            }
           }
+        } catch (err) {
+          console.error('Error asignando proyectos:', err)
         }
-      } catch (err) {
-        console.error('Error asignando proyectos:', err)
-      }
-    })()
+      })()
   }
 
   const handleRoleChange = (role, value) => {
@@ -97,7 +100,7 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
     { key: 'flota', name: 'Control Flota', icon: 'bi-truck', color: '#06b6d4' },
     { key: 'produccion', name: 'Construcción', icon: 'bi-buildings', color: '#7c3aed' },
     { key: 'logistica', name: 'Logística', icon: 'bi-box-seam', color: '#f59e0b' },
-    
+    { key: 'rrhh', name: 'Recursos Humanos', icon: 'bi-people-fill', color: '#ec4899' }
   ]
 
   const toggleProject = (pid) => {
@@ -112,27 +115,27 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
   const isSelf = editingUser && String(editingUser.id) === String(currentUserId)
 
   return (
-    <Modal 
-      show={show} 
-      onHide={onHide} 
-      size="lg" 
+    <Modal
+      show={show}
+      onHide={onHide}
+      size="lg"
       centered
       backdrop="static"
     >
       <Form onSubmit={handleSubmit}>
         {/* Header */}
-        <Modal.Header 
+        <Modal.Header
           className="border-0 pb-0"
           style={{ padding: '24px 24px 16px' }}
         >
           <div className="d-flex align-items-center gap-3">
-            <div 
+            <div
               className="d-flex align-items-center justify-content-center"
               style={{
                 width: '48px',
                 height: '48px',
                 borderRadius: '12px',
-                background: editingUser 
+                background: editingUser
                   ? 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)'
                   : 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)',
                 color: 'white',
@@ -160,10 +163,10 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
 
         <Modal.Body style={{ padding: '24px' }}>
           {/* Datos básicos */}
-          <div 
+          <div
             className="p-4 mb-4"
-            style={{ 
-              background: '#f8fafc', 
+            style={{
+              background: '#f8fafc',
               borderRadius: '12px',
               border: '1px solid #e2e8f0'
             }}
@@ -172,16 +175,16 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
               <i className="bi bi-person"></i>
               Información de Cuenta
             </h6>
-            
+
             <div className="row g-3">
               <div className="col-12">
                 <label className="form-label" style={{ fontWeight: '500', fontSize: '13px', color: '#374151' }}>
                   Correo electrónico
                 </label>
                 <div className="input-group">
-                  <span 
+                  <span
                     className="input-group-text"
-                    style={{ 
+                    style={{
                       background: 'white',
                       border: '1px solid #e2e8f0',
                       borderRight: 'none',
@@ -212,9 +215,9 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
                   Contraseña {editingUser && <span style={{ color: '#94a3b8', fontWeight: '400' }}>(dejar vacío para mantener)</span>}
                 </label>
                 <div className="input-group">
-                  <span 
+                  <span
                     className="input-group-text"
-                    style={{ 
+                    style={{
                       background: 'white',
                       border: '1px solid #e2e8f0',
                       borderRight: 'none',
@@ -242,7 +245,7 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
                     type="button"
                     className="input-group-text"
                     onClick={() => setShowPassword(!showPassword)}
-                    style={{ 
+                    style={{
                       background: 'white',
                       border: '1px solid #e2e8f0',
                       borderLeft: 'none',
@@ -258,17 +261,17 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
           </div>
 
           {/* Superusuario */}
-          <div 
+          <div
             className="p-4 mb-4"
-            style={{ 
-              background: formData.roles.admin ? '#f0fdfa' : '#f8fafc', 
+            style={{
+              background: formData.roles.admin ? '#f0fdfa' : '#f8fafc',
               borderRadius: '12px',
               border: formData.roles.admin ? '1px solid #99f6e4' : '1px solid #e2e8f0',
               transition: 'all 0.2s'
             }}
           >
             <div className="d-flex align-items-start gap-3">
-              <div 
+              <div
                 className="form-check form-switch"
                 style={{ paddingLeft: '0' }}
               >
@@ -288,11 +291,11 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
                 />
               </div>
               <div className="flex-grow-1">
-                <label 
-                  htmlFor="superuser-switch" 
+                <label
+                  htmlFor="superuser-switch"
                   className="form-check-label d-flex align-items-center gap-2 mb-1"
-                  style={{ 
-                    fontWeight: '600', 
+                  style={{
+                    fontWeight: '600',
                     color: '#0f172a',
                     cursor: isSelf ? 'not-allowed' : 'pointer'
                   }}
@@ -304,7 +307,7 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
                   Acceso completo al panel de administración y gestión de usuarios
                 </p>
                 {isSelf && (
-                  <div 
+                  <div
                     className="mt-2 d-flex align-items-center gap-2"
                     style={{ fontSize: '12px', color: '#f59e0b' }}
                   >
@@ -322,16 +325,16 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
               <i className="bi bi-grid"></i>
               Permisos de Aplicaciones
             </h6>
-            
+
             <div className="row g-3">
               {apps.map(app => {
                 const currentValue = String(formData.roles[app.key])
                 return (
                   <div key={app.key} className="col-md-6">
-                    <div 
+                    <div
                       className="p-3 h-100"
-                      style={{ 
-                        background: '#f8fafc', 
+                      style={{
+                        background: '#f8fafc',
                         borderRadius: '12px',
                         border: '1px solid #e2e8f0'
                       }}
@@ -354,7 +357,7 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
                           {app.name}
                         </span>
                       </div>
-                      
+
                       <div className="d-flex gap-2">
                         {[
                           { value: 'admin', label: 'Admin', bg: '#fef2f2', color: '#dc2626', border: '#fecaca' },
@@ -413,12 +416,12 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
         </Modal.Body>
 
         {/* Footer */}
-        <Modal.Footer 
+        <Modal.Footer
           className="border-0"
           style={{ padding: '16px 24px 24px', gap: '12px' }}
         >
-          <Button 
-            variant="light" 
+          <Button
+            variant="light"
             onClick={onHide}
             style={{
               padding: '12px 24px',
@@ -430,17 +433,17 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
           >
             Cancelar
           </Button>
-          <Button 
+          <Button
             type="submit"
             style={{
-              background: editingUser 
+              background: editingUser
                 ? 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)'
                 : 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)',
               border: 'none',
               padding: '12px 32px',
               borderRadius: '10px',
               fontWeight: '600',
-              boxShadow: editingUser 
+              boxShadow: editingUser
                 ? '0 4px 12px rgba(245, 158, 11, 0.3)'
                 : '0 4px 12px rgba(13, 148, 136, 0.3)'
             }}

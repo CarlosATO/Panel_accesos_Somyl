@@ -1,12 +1,17 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-function Login({ setUser }) {
+export default function Login({ setUser }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+
+  // SOMYL CORPORATE IDENTITY
+  const brandCyan = '#00AEEF'
+  const brandNavy = '#002855' // Deep Navy
+  const brandDark = '#0f172a'
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -14,313 +19,235 @@ function Login({ setUser }) {
     setError('')
 
     try {
+      // Usamos path relativo que será proxuado por Vite
       const response = await fetch('/api/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
-        credentials: 'include'
       })
 
       const data = await response.json()
 
       if (response.ok) {
+        // Guardamos token y datos de usuario
+        localStorage.setItem('sso_token', data.token)
+        localStorage.setItem('sso_user', JSON.stringify(data.user))
+
+        // Actualizamos contexto
         setUser(data.user)
         navigate('/')
       } else {
-        setError(data.error || 'Error al iniciar sesión')
+        setError(data.error || 'Credenciales incorrectas')
       }
     } catch (error) {
-      setError('Error de conexión')
+      setError('Error de conexión con el servidor')
     }
     setLoading(false)
   }
 
   return (
-    <div 
-      className="min-vh-100 d-flex align-items-center justify-content-center position-relative" 
-      style={{ 
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0d9488 100%)',
+    <div
+      className="min-vh-100 d-flex align-items-center justify-content-center position-relative"
+      style={{
+        // Fondo: Gradiente Corporativo Profesional (Navy to Dark)
+        background: `radial-gradient(circle at 50% 0%, ${brandNavy} 0%, ${brandDark} 100%)`,
         width: '100%',
         overflow: 'hidden'
       }}
     >
-      {/* Fondo con patrón de fibra óptica */}
-      <div 
+      {/* --- EFECTOS DE FONDO (RED DE FIBRA / CONECTIVIDAD) --- */}
+
+      {/* Malla de red sutil */}
+      <div
         style={{
           position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
+          inset: 0,
           backgroundImage: `
-            radial-gradient(circle at 20% 80%, rgba(13, 148, 136, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(20, 184, 166, 0.25) 0%, transparent 50%),
-            radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.2) 0%, transparent 30%),
-            radial-gradient(circle at 90% 90%, rgba(13, 148, 136, 0.35) 0%, transparent 40%)
+            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
           `,
-          pointerEvents: 'none'
-        }}
-      />
-      
-      {/* Líneas decorativas tipo fibra óptica */}
-      <div 
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: `
-            linear-gradient(45deg, transparent 48%, rgba(13, 148, 136, 0.1) 49%, rgba(13, 148, 136, 0.1) 51%, transparent 52%),
-            linear-gradient(-45deg, transparent 48%, rgba(20, 184, 166, 0.08) 49%, rgba(20, 184, 166, 0.08) 51%, transparent 52%)
-          `,
-          backgroundSize: '60px 60px',
+          backgroundSize: '40px 40px',
           pointerEvents: 'none'
         }}
       />
 
-      {/* Puntos brillantes simulando conexiones */}
-      <div 
+      {/* Destello Azul Somyl (Cyan) */}
+      <div
         style={{
           position: 'absolute',
-          top: '15%',
-          left: '10%',
-          width: '8px',
-          height: '8px',
-          background: 'radial-gradient(circle, #14b8a6 0%, transparent 70%)',
+          top: '-20%',
+          right: '-10%',
+          width: '600px',
+          height: '600px',
           borderRadius: '50%',
-          boxShadow: '0 0 20px 5px rgba(20, 184, 166, 0.5)',
-          animation: 'pulse 3s infinite'
+          background: `radial-gradient(circle, ${brandCyan}20 0%, transparent 70%)`,
+          filter: 'blur(60px)',
+          pointerEvents: 'none'
         }}
       />
-      <div 
-        style={{
-          position: 'absolute',
-          top: '70%',
-          right: '15%',
-          width: '6px',
-          height: '6px',
-          background: 'radial-gradient(circle, #0d9488 0%, transparent 70%)',
-          borderRadius: '50%',
-          boxShadow: '0 0 15px 4px rgba(13, 148, 136, 0.6)',
-          animation: 'pulse 2.5s infinite 0.5s'
-        }}
-      />
-      <div 
-        style={{
-          position: 'absolute',
-          top: '30%',
-          right: '25%',
-          width: '5px',
-          height: '5px',
-          background: 'radial-gradient(circle, #06b6d4 0%, transparent 70%)',
-          borderRadius: '50%',
-          boxShadow: '0 0 12px 3px rgba(6, 182, 212, 0.5)',
-          animation: 'pulse 4s infinite 1s'
-        }}
-      />
+
+      {/* Puntos animados (Nodos de red) */}
+      {[
+        { top: '15%', left: '10%', delay: '0s' },
+        { top: '80%', right: '15%', delay: '2s' },
+        { top: '40%', right: '5%', delay: '4s' }
+      ].map((dot, index) => (
+        <div
+          key={index}
+          style={{
+            position: 'absolute',
+            top: dot.top,
+            left: dot.left,
+            right: dot.right,
+            width: '4px',
+            height: '4px',
+            background: brandCyan,
+            borderRadius: '50%',
+            boxShadow: `0 0 10px 2px ${brandCyan}`,
+            animation: `pulse 3s infinite ${dot.delay}`,
+            opacity: 0.6
+          }}
+        />
+      ))}
 
       <style>
         {`
           @keyframes pulse {
-            0%, 100% { opacity: 0.4; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.3); }
+            0% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.5); opacity: 1; box-shadow: 0 0 20px 4px ${brandCyan}60; }
+            100% { transform: scale(1); opacity: 0.4; }
           }
         `}
       </style>
 
-      <div className="col-11 col-sm-10 col-md-6 col-lg-5 col-xl-4 px-3 position-relative" style={{ zIndex: 1 }}>
-        <div 
-          className="card border-0" 
-          style={{ 
-            borderRadius: '20px',
-            boxShadow: '0 25px 80px rgba(0, 0, 0, 0.4), 0 0 40px rgba(13, 148, 136, 0.15)',
-            overflow: 'hidden',
-            backdropFilter: 'blur(10px)',
-            background: 'rgba(255, 255, 255, 0.97)'
+      {/* --- TARJETA DE LOGIN --- */}
+      <div className="col-11 col-sm-9 col-md-6 col-lg-5 col-xl-4 px-3 position-relative" style={{ zIndex: 10 }}>
+        <div
+          className="card border-0"
+          style={{
+            borderRadius: '16px',
+            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)',
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(20px)', // Glassmorphism
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            overflow: 'hidden'
           }}
         >
-          <div 
-            style={{ 
-              background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #0f766e 100%)',
-              padding: '40px 40px 32px',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-          >
-            {/* Efecto de brillo en el header */}
-            <div 
+          {/* Header */}
+          <div className="text-center pt-5 pb-2">
+            <div
               style={{
-                position: 'absolute',
-                top: '-50%',
-                left: '-50%',
-                width: '200%',
-                height: '200%',
-                background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-                pointerEvents: 'none'
-              }}
-            />
-            
-            <div 
-              style={{ 
-                width: '72px',
-                height: '72px',
+                width: '80px',
+                height: '80px',
                 background: 'white',
                 borderRadius: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto 20px',
-                boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
-                padding: '12px',
-                position: 'relative'
+                boxShadow: `0 0 30px ${brandCyan}40`,
+                padding: '12px'
               }}
             >
-              <img 
-                src="/logo-somyl.ico" 
-                alt="Somyl" 
-                style={{ 
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain'
-                }} 
+              <img
+                src="/logo-somyl.ico"
+                alt="Somyl S.A."
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
               />
             </div>
-            <h2 
-              className="fw-bold mb-2" 
-              style={{ 
-                color: 'white',
-                fontSize: '28px',
-                letterSpacing: '-0.5px',
-                textShadow: '0 2px 10px rgba(0,0,0,0.1)',
-                position: 'relative'
-              }}
-            >
+
+            <h2 className="fw-bold text-white mb-1" style={{ fontSize: '24px', letterSpacing: '0.5px' }}>
               Portal de Accesos
             </h2>
-            <p 
-              style={{ 
-                color: 'rgba(255, 255, 255, 0.9)',
-                fontSize: '15px',
-                margin: 0,
-                fontWeight: '400',
-                position: 'relative'
-              }}
-            >
-              Somyl SA - Sistema Unificado
+            <p className="text-white-50 mb-0" style={{ fontSize: '14px', fontWeight: 300 }}>
+              Somyl servicios de Construcción e Ingeniería
             </p>
           </div>
 
-          <div className="card-body" style={{ padding: '40px' }}>
+          <div className="card-body p-4 p-md-5">
             {error && (
-              <div 
-                className="alert border-0 d-flex align-items-center" 
+              <div
+                className="alert d-flex align-items-center"
                 role="alert"
-                style={{ 
-                  borderRadius: '12px',
-                  background: '#fef2f2',
-                  color: '#991b1b',
-                  padding: '16px',
-                  marginBottom: '24px',
+                style={{
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  color: '#ef4444',
+                  border: '1px solid rgba(239, 68, 68, 0.2)',
+                  borderRadius: '8px',
                   fontSize: '14px'
                 }}
               >
-                <svg 
-                  width="20" 
-                  height="20" 
-                  viewBox="0 0 20 20" 
-                  fill="currentColor"
-                  style={{ marginRight: '12px', flexShrink: 0 }}
-                >
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-                {error}
+                <span className="me-2">⚠️</span> {error}
               </div>
             )}
 
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label 
-                  htmlFor="email" 
-                  className="form-label"
-                  style={{ 
-                    fontWeight: '600',
-                    color: '#374151',
-                    fontSize: '14px',
-                    marginBottom: '8px'
-                  }}
+                <label
+                  htmlFor="email"
+                  className="form-label text-white-50 fw-semibold"
+                  style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px' }}
                 >
-                  Correo electrónico
+                  Correo Corporativo
                 </label>
                 <input
                   type="email"
-                  className="form-control"
+                  className="form-control form-control-lg text-white"
                   id="email"
-                  placeholder="tu@empresa.com"
+                  placeholder="usuario@somyl.cl"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  style={{ 
-                    padding: '14px 16px',
-                    borderRadius: '10px',
-                    border: '1.5px solid #e5e7eb',
+                  style={{
                     fontSize: '15px',
-                    transition: 'all 0.2s',
-                    background: '#fafafa'
+                    background: 'rgba(0, 0, 0, 0.2)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: 'white'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#0d9488'
-                    e.target.style.background = 'white'
-                    e.target.style.boxShadow = '0 0 0 3px rgba(13, 148, 136, 0.08)'
+                    e.target.style.borderColor = brandCyan
+                    e.target.style.boxShadow = `0 0 0 2px ${brandCyan}30`
+                    e.target.style.background = 'rgba(0, 0, 0, 0.4)'
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb'
-                    e.target.style.background = '#fafafa'
+                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'
+                    e.target.style.background = 'rgba(0, 0, 0, 0.2)'
                     e.target.style.boxShadow = 'none'
                   }}
                 />
               </div>
 
               <div className="mb-4">
-                <label 
-                  htmlFor="password" 
-                  className="form-label"
-                  style={{ 
-                    fontWeight: '600',
-                    color: '#374151',
-                    fontSize: '14px',
-                    marginBottom: '8px'
-                  }}
+                <label
+                  htmlFor="password"
+                  className="form-label text-white-50 fw-semibold"
+                  style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px' }}
                 >
                   Contraseña
                 </label>
                 <input
                   type="password"
-                  className="form-control"
+                  className="form-control form-control-lg text-white"
                   id="password"
-                  placeholder="Ingresa tu contraseña"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  style={{ 
-                    padding: '14px 16px',
-                    borderRadius: '10px',
-                    border: '1.5px solid #e5e7eb',
+                  style={{
                     fontSize: '15px',
-                    transition: 'all 0.2s',
-                    background: '#fafafa'
+                    background: 'rgba(0, 0, 0, 0.2)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: 'white'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#0d9488'
-                    e.target.style.background = 'white'
-                    e.target.style.boxShadow = '0 0 0 3px rgba(13, 148, 136, 0.08)'
+                    e.target.style.borderColor = brandCyan
+                    e.target.style.boxShadow = `0 0 0 2px ${brandCyan}30`
+                    e.target.style.background = 'rgba(0, 0, 0, 0.4)'
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = '#e5e7eb'
-                    e.target.style.background = '#fafafa'
+                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'
+                    e.target.style.background = 'rgba(0, 0, 0, 0.2)'
                     e.target.style.boxShadow = 'none'
                   }}
                 />
@@ -328,59 +255,43 @@ function Login({ setUser }) {
 
               <button
                 type="submit"
-                className="btn w-100 text-white fw-semibold"
+                className="btn w-100 fw-bold py-3 text-white mt-2"
                 style={{
-                  background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)',
+                  background: brandCyan,
                   border: 'none',
-                  padding: '16px',
-                  borderRadius: '10px',
-                  fontSize: '16px',
-                  letterSpacing: '0.3px',
-                  transition: 'all 0.3s',
-                  boxShadow: '0 4px 12px rgba(13, 148, 136, 0.25)',
-                  marginTop: '8px'
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  letterSpacing: '0.5px',
+                  boxShadow: `0 4px 15px ${brandCyan}40`,
+                  transition: 'all 0.2s',
+                  textTransform: 'uppercase'
                 }}
                 disabled={loading}
                 onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px)'
-                  e.target.style.boxShadow = '0 8px 20px rgba(13, 148, 136, 0.35)'
+                  e.target.style.transform = 'translateY(-1px)'
+                  e.target.style.boxShadow = `0 6px 20px ${brandCyan}60`
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.transform = 'translateY(0)'
-                  e.target.style.boxShadow = '0 4px 12px rgba(13, 148, 136, 0.25)'
+                  e.target.style.boxShadow = `0 4px 15px ${brandCyan}40`
                 }}
               >
-                {loading ? (
-                  <>
-                    <span 
-                      className="spinner-border spinner-border-sm me-2" 
-                      role="status" 
-                      aria-hidden="true"
-                      style={{ width: '16px', height: '16px' }}
-                    />
-                    Iniciando sesión...
-                  </>
-                ) : (
-                  'Iniciar Sesión'
-                )}
+                {loading ? 'Autenticando...' : 'Ingresar al Portal'}
               </button>
             </form>
           </div>
+
+          <div className="text-center pb-4 pt-2 border-top border-secondary border-opacity-25 mx-4">
+            <small className="text-white-50" style={{ fontSize: '11px' }}>
+              Portal de Gestión Integral
+            </small>
+          </div>
         </div>
 
-        <p 
-          className="text-center mt-4"
-          style={{ 
-            color: 'rgba(255, 255, 255, 0.7)',
-            fontSize: '13px',
-            fontWeight: '400'
-          }}
-        >
-          © 2025 Somyl SA. Todos los derechos reservados.
+        <p className="text-center mt-4 text-white-50" style={{ fontSize: '12px', fontWeight: 300 }}>
+          &copy; {new Date().getFullYear()} Somyl S.A. | Ingeniería y Telecomunicaciones
         </p>
       </div>
     </div>
   )
 }
-
-export default Login

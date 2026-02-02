@@ -3,13 +3,17 @@ import { useState } from 'react'
 function UsuariosTable({ users, currentUserId, onEdit, onDelete }) {
   const [deleteConfirm, setDeleteConfirm] = useState(null)
 
+  // SOMYL CORPORATE COLORS
+  const brandCyan = '#00AEEF'
+  const brandNavy = '#002855'
+
   const getRoleBadge = (role) => {
     if (role === 'admin') {
       return (
-        <span 
+        <span
           className="badge"
-          style={{ 
-            background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
+          style={{
+            background: brandNavy,
             color: 'white',
             padding: '6px 10px',
             borderRadius: '6px',
@@ -23,11 +27,11 @@ function UsuariosTable({ users, currentUserId, onEdit, onDelete }) {
     }
     if (role === 'true' || role === true) {
       return (
-        <span 
+        <span
           className="badge"
-          style={{ 
-            background: '#dcfce7',
-            color: '#16a34a',
+          style={{
+            background: '#e0f2fe', // Light Cyan
+            color: '#0284c7', // Darker Cyan/Blue
             padding: '6px 10px',
             borderRadius: '6px',
             fontSize: '11px',
@@ -39,11 +43,11 @@ function UsuariosTable({ users, currentUserId, onEdit, onDelete }) {
       )
     }
     return (
-      <span 
+      <span
         className="badge"
-        style={{ 
+        style={{
           background: '#f1f5f9',
-          color: '#64748b',
+          color: '#94a3b8',
           padding: '6px 10px',
           borderRadius: '6px',
           fontSize: '11px',
@@ -67,109 +71,33 @@ function UsuariosTable({ users, currentUserId, onEdit, onDelete }) {
 
   return (
     <div className="table-responsive">
-      <table className="table table-hover mb-0" style={{ fontSize: '14px' }}>
-        <thead>
-          <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
-            <th 
-              className="text-uppercase" 
-              style={{ 
-                padding: '16px 24px',
-                fontSize: '11px',
-                fontWeight: '700',
-                color: '#64748b',
-                letterSpacing: '0.5px',
-                background: '#f8fafc'
-              }}
-            >
-              Usuario
-            </th>
-            <th 
-              className="text-uppercase text-center" 
-              style={{ 
-                padding: '16px 12px',
-                fontSize: '11px',
-                fontWeight: '700',
-                color: '#64748b',
-                letterSpacing: '0.5px',
-                background: '#f8fafc'
-              }}
-            >
-              Órdenes
-            </th>
-            <th 
-              className="text-uppercase text-center" 
-              style={{ 
-                padding: '16px 12px',
-                fontSize: '11px',
-                fontWeight: '700',
-                color: '#64748b',
-                letterSpacing: '0.5px',
-                background: '#f8fafc'
-              }}
-            >
-              Construcción
-            </th>
-            <th 
-              className="text-uppercase text-center" 
-              style={{ 
-                padding: '16px 12px',
-                fontSize: '11px',
-                fontWeight: '700',
-                color: '#64748b',
-                letterSpacing: '0.5px',
-                background: '#f8fafc'
-              }}
-            >
-              Flota
-            </th>
-            <th 
-              className="text-uppercase text-center" 
-              style={{ 
-                padding: '16px 12px',
-                fontSize: '11px',
-                fontWeight: '700',
-                color: '#64748b',
-                letterSpacing: '0.5px',
-                background: '#f8fafc'
-              }}
-            >
-              Logística
-            </th>
-            <th 
-              className="text-uppercase text-end" 
-              style={{ 
-                padding: '16px 24px',
-                fontSize: '11px',
-                fontWeight: '700',
-                color: '#64748b',
-                letterSpacing: '0.5px',
-                background: '#f8fafc'
-              }}
-            >
-              Acciones
-            </th>
+      <table className="table table-hover mb-0 align-middle" style={{ fontSize: '14px' }}>
+        <thead className="bg-light">
+          <tr>
+            <th className="py-3 px-4 text-secondary text-uppercase small border-0" style={{ fontWeight: '600' }}>Usuario</th>
+            <th className="py-3 px-4 text-secondary text-uppercase small text-center border-0" style={{ fontWeight: '600' }}>Órdenes</th>
+            <th className="py-3 px-4 text-secondary text-uppercase small text-center border-0" style={{ fontWeight: '600' }}>Construcción</th>
+            <th className="py-3 px-4 text-secondary text-uppercase small text-center border-0" style={{ fontWeight: '600' }}>Flota</th>
+            <th className="py-3 px-4 text-secondary text-uppercase small text-center border-0" style={{ fontWeight: '600' }}>Logística</th>
+            <th className="py-3 px-4 text-secondary text-uppercase small text-center border-0" style={{ fontWeight: '600' }}>RRHH</th>
+            <th className="py-3 px-4 text-secondary text-uppercase small text-end border-0" style={{ fontWeight: '600' }}>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {users.map((user, index) => (
-            <tr 
-              key={user.id} 
-              style={{ 
-                borderBottom: index === users.length - 1 ? 'none' : '1px solid #f1f5f9',
-                transition: 'background 0.2s'
-              }}
+            <tr
+              key={user.id}
+              style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.2s' }}
             >
               <td style={{ padding: '16px 24px' }}>
                 <div className="d-flex align-items-center gap-3">
-                  <div 
+                  <div
                     className="d-flex align-items-center justify-content-center"
                     style={{
                       width: '40px',
                       height: '40px',
                       borderRadius: '10px',
-                      background: user.is_superuser 
-                        ? 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)'
-                        : '#f1f5f9',
+                      background: user.is_superuser ? brandNavy : '#f1f5f9',
                       color: user.is_superuser ? 'white' : '#64748b',
                       fontSize: '15px',
                       fontWeight: '600'
@@ -178,115 +106,48 @@ function UsuariosTable({ users, currentUserId, onEdit, onDelete }) {
                     {user.email?.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <div style={{ fontWeight: '600', color: '#0f172a' }}>
+                    <div style={{ fontWeight: '600', color: '#1e293b' }}>
                       {user.email}
                     </div>
                     <div className="d-flex align-items-center gap-2" style={{ fontSize: '12px', color: '#94a3b8' }}>
                       {user.is_superuser && (
-                        <span 
-                          className="badge"
-                          style={{ 
-                            background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)',
-                            color: 'white',
-                            padding: '3px 8px',
-                            borderRadius: '4px',
-                            fontSize: '10px',
-                            fontWeight: '600'
-                          }}
-                        >
-                          <i className="bi bi-shield-check me-1"></i>
-                          Superusuario
+                        <span className="text-primary fw-bold" style={{ fontSize: '11px', color: brandCyan }}>
+                          <i className="bi bi-shield-check me-1"></i> Superusuario
                         </span>
                       )}
                       {String(currentUserId) === String(user.id) && (
-                        <span style={{ color: '#0d9488' }}>
-                          <i className="bi bi-person-check me-1"></i>
-                          Tú
+                        <span className="text-secondary">
+                          (Tú)
                         </span>
                       )}
                     </div>
                   </div>
                 </div>
               </td>
-              <td className="text-center align-middle" style={{ padding: '16px 12px' }}>
-                {getRoleBadge(user.rol_ordenes)}
-              </td>
-              <td className="text-center align-middle" style={{ padding: '16px 12px' }}>
-                {getRoleBadge(user.rol_produccion)}
-              </td>
-              <td className="text-center align-middle" style={{ padding: '16px 12px' }}>
-                {getRoleBadge(user.rol_flota)}
-              </td>
-              <td className="text-center align-middle" style={{ padding: '16px 12px' }}>
-                {getRoleBadge(user.rol_logistica)}
-              </td>
-              <td className="text-end align-middle" style={{ padding: '16px 24px' }}>
+              <td className="text-center">{getRoleBadge(user.rol_ordenes)}</td>
+              <td className="text-center">{getRoleBadge(user.rol_produccion)}</td>
+              <td className="text-center">{getRoleBadge(user.rol_flota)}</td>
+              <td className="text-center">{getRoleBadge(user.rol_logistica)}</td>
+              <td className="text-center">{getRoleBadge(user.rol_rrhh)}</td>
+              <td className="text-end" style={{ padding: '16px 24px' }}>
                 <div className="d-flex justify-content-end gap-2">
-                  <button 
-                    className="btn btn-sm d-flex align-items-center justify-content-center"
+                  <button
+                    className="btn btn-sm d-flex align-items-center justify-content-center border-0 text-primary bg-light"
                     onClick={() => onEdit(user)}
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '8px',
-                      background: '#f8fafc',
-                      border: '1px solid #e2e8f0',
-                      color: '#475569',
-                      padding: 0,
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#0d9488'
-                      e.currentTarget.style.color = 'white'
-                      e.currentTarget.style.borderColor = '#0d9488'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = '#f8fafc'
-                      e.currentTarget.style.color = '#475569'
-                      e.currentTarget.style.borderColor = '#e2e8f0'
-                    }}
-                    title="Editar usuario"
+                    style={{ width: '32px', height: '32px', borderRadius: '8px' }}
+                    title="Editar"
                   >
-                    <i className="bi bi-pencil"></i>
+                    <i className="bi bi-pencil-fill"></i>
                   </button>
-                  
+
                   {String(currentUserId) !== String(user.id) && (
-                    <button 
-                      className="btn btn-sm d-flex align-items-center justify-content-center"
+                    <button
+                      className={`btn btn-sm d-flex align-items-center justify-content-center border-0 ${deleteConfirm === user.id ? 'btn-danger text-white' : 'text-danger bg-light'}`}
                       onClick={() => handleDeleteClick(user)}
-                      style={{
-                        minWidth: deleteConfirm === user.id ? '100px' : '36px',
-                        height: '36px',
-                        borderRadius: '8px',
-                        background: deleteConfirm === user.id ? '#dc2626' : '#f8fafc',
-                        border: deleteConfirm === user.id ? '1px solid #dc2626' : '1px solid #e2e8f0',
-                        color: deleteConfirm === user.id ? 'white' : '#475569',
-                        padding: deleteConfirm === user.id ? '0 12px' : 0,
-                        transition: 'all 0.2s',
-                        fontSize: '13px',
-                        fontWeight: deleteConfirm === user.id ? '500' : '400'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (deleteConfirm !== user.id) {
-                          e.currentTarget.style.background = '#fee2e2'
-                          e.currentTarget.style.color = '#dc2626'
-                          e.currentTarget.style.borderColor = '#fecaca'
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (deleteConfirm !== user.id) {
-                          e.currentTarget.style.background = '#f8fafc'
-                          e.currentTarget.style.color = '#475569'
-                          e.currentTarget.style.borderColor = '#e2e8f0'
-                        }
-                      }}
-                      title={deleteConfirm === user.id ? 'Confirmar eliminación' : 'Eliminar usuario'}
+                      style={{ height: '32px', borderRadius: '8px', minWidth: deleteConfirm === user.id ? '80px' : '32px', transition: 'all 0.2s' }}
+                      title="Eliminar"
                     >
-                      {deleteConfirm === user.id ? (
-                        <>¿Confirmar?</>
-                      ) : (
-                        <i className="bi bi-trash"></i>
-                      )}
+                      {deleteConfirm === user.id ? 'Confirmar' : <i className="bi bi-trash-fill"></i>}
                     </button>
                   )}
                 </div>
