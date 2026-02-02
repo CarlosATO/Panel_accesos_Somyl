@@ -120,7 +120,7 @@ def dashboard():
     url_flota = os.getenv("URL_FLOTA", "http://localhost:5176") # Changed default to 5176 to avoid conflict
     url_rrhh = os.getenv("URL_RRHH", "http://localhost:5175")
     url_construccion = os.getenv("URL_CONSTRUCCION", os.getenv("URL_PRODUCCION", "http://localhost:5180"))
-    url_ordenes = os.getenv("URL_ORDENES", "http://localhost:5177/sso/login")
+    url_ordenes = os.getenv("URL_ORDENES", "https://pagos.datix.cl/sso/login")
     
     # Helper para unir URL y params correctamente
     def make_sso_url(base_url, token):
