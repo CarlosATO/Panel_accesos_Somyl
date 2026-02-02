@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS is_rrhh_visible BOOLEAN DEFAULT FALSE;
