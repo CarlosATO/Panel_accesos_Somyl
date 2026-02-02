@@ -118,7 +118,7 @@ def dashboard():
     # 1. Leemos las variables. Si no existen, por seguridad usamos localhost
     url_logistica = os.getenv("URL_LOGISTICA", "http://localhost:5160")
     url_flota = os.getenv("URL_FLOTA", "http://localhost:5176") # Changed default to 5176 to avoid conflict
-    url_rrhh = os.getenv("URL_RRHH", "http://localhost:5175")
+    url_rrhh = os.getenv("URL_RRHH", "https://rrhhsomyl2026-production.up.railway.app")
     url_construccion = os.getenv("URL_CONSTRUCCION", os.getenv("URL_PRODUCCION", "http://localhost:5180"))
     url_ordenes = os.getenv("URL_ORDENES", "https://pagos.datix.cl/sso/login")
     
