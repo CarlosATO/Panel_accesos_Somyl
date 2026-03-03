@@ -7,23 +7,22 @@ function Dashboard({ user, setUser }) {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const navigate = useNavigate()
 
-  // SOMYL CORPORATE IDENTITY
-  const brandCyan = '#00AEEF'
-  const brandNavy = '#002855'
+  // SOMYL CORPORATE IDENTITY - TECH MINIMALIST
+  const brandCyan = '#0ea5e9' // Sky Blue
+  const brandNavy = '#0f172a' // Slate 900
 
-  // Categorías con colores actualizados (para mantener distinción visual pero menos agresiva)
-  // Finanzas: Verde Esmeralda | Operaciones: Azul Real | Logística: Naranja/Ámbar
+  // Categorías con colores tech
   const apps = [
     { key: 'ordenes', name: 'Adquisiciones', description: 'Gestión de pagos y finanzas', icon: 'bi-receipt-cutoff', color: '#10b981', category: 'finance' },
     { key: 'flota', name: 'Control Flota', description: 'Vehículos y mantenimiento', icon: 'bi-truck', color: '#0ea5e9', category: 'logistics' },
     { key: 'logistica', name: 'Logística', description: 'Inventario y Stock de Proyectos', icon: 'bi-box-seam', color: '#f59e0b', category: 'logistics' },
     { key: 'produccion', name: 'Construcción', description: 'Gestión de obras y producción', icon: 'bi-building', color: '#f97316', category: 'logistics' },
-    { key: 'rrhh', name: 'Recursos Humanos', description: 'Gestión de Personal y Nómina', icon: 'bi-people', color: '#ec4899', category: 'finance' },
+    { key: 'rrhh', name: 'Recursos Humanos', description: 'Gestión de Personal y Nómina', icon: 'bi-people', color: '#db2777', category: 'finance' },
   ]
 
   const categories = [
     { id: 'all', name: 'Todas las Apps', icon: 'bi-grid-3x3-gap' },
-    { id: 'finance', name: 'Finanzas', icon: 'bi-cash-stack' },
+    { id: 'finance', name: 'Finanzas', icon: 'bi-wallet2' },
     { id: 'operations', name: 'Operaciones', icon: 'bi-diagram-3' },
     { id: 'logistics', name: 'Logística', icon: 'bi-truck' }
   ]
@@ -117,269 +116,317 @@ function Dashboard({ user, setUser }) {
   }
 
   return (
-    <div className="min-vh-100 d-flex flex-column" style={{ background: '#f8fafc' }}>
-      {/* Header Corporativo (Navy Blue) */}
-      <nav
-        className="navbar navbar-expand-lg shadow-sm sticky-top"
+    <div className="min-vh-100 d-flex" style={{ background: '#f8fafc' }}>
+
+      {/* Sidebar Dark/Tech */}
+      <div
+        className="d-none d-lg-flex flex-column shadow-lg"
         style={{
+          width: '280px',
           background: brandNavy,
-          borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-          zIndex: 1030
+          color: '#e2e8f0',
+          position: 'sticky',
+          top: 0,
+          height: '100vh',
+          zIndex: 1020,
+          transition: 'all 0.3s ease'
         }}
       >
-        <div className="container-fluid px-4 md:px-5">
-          <a className="navbar-brand d-flex align-items-center gap-3 text-white" href="#" style={{ fontWeight: '600' }}>
-            <div style={{ background: 'white', padding: '6px', borderRadius: '8px' }}>
-              <img
-                src="/logo-somyl.ico"
-                alt="Somyl"
-                style={{ width: 32, height: 'auto', display: 'block' }}
-              />
-            </div>
-            <span style={{ fontWeight: 600, fontSize: '18px', letterSpacing: '0.5px' }}>Portal Unificado</span>
-          </a>
-
-          <div className="d-flex align-items-center gap-4">
-            <div className="d-none d-md-block text-end">
-              <div style={{ fontSize: '14px', color: 'white', fontWeight: '500' }}>{user.email}</div>
-              <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase' }}>{user.is_superuser ? 'Administrador' : 'Usuario'}</div>
-            </div>
-
-            <button
-              className="btn btn-sm d-flex align-items-center gap-2"
-              onClick={handleLogout}
-              style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                color: 'white',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
-              onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.1)'}
-            >
-              <i className="bi bi-box-arrow-right"></i>
-              <span className="d-none d-sm-inline">Salir</span>
-            </button>
+        {/* Logo Section */}
+        <div className="p-4 d-flex align-items-center gap-3 border-bottom" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+          <div style={{ background: 'white', padding: '6px', borderRadius: '8px' }}>
+            <img src="/logo-somyl.ico" alt="Somyl" style={{ width: 28, height: 'auto', display: 'block' }} />
           </div>
+          <span style={{ fontWeight: 600, fontSize: '18px', color: '#f8fafc', letterSpacing: '0.5px' }}>Somyl Portal</span>
         </div>
-      </nav>
 
-      <div className="d-flex flex-grow-1">
-        {/* Sidebar */}
-        <div
-          className="bg-white d-none d-lg-flex shadow-sm"
-          style={{
-            width: '280px',
-            minHeight: 'calc(100vh - 70px)',
-            borderRight: '1px solid #e2e8f0',
-            flexDirection: 'column',
-            position: 'sticky',
-            top: '70px',
-            height: 'calc(100vh - 70px)',
-            zIndex: 1020
-          }}
-        >
-          <div className="p-4 flex-grow-1 overflow-auto">
-            <div
-              className="text-uppercase fw-bold mb-3"
-              style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px' }}
-            >
-              Navegación
-            </div>
-
-            <div className="d-flex flex-column gap-1">
-              {categories.map(cat => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className="btn text-start d-flex align-items-center gap-3 w-100"
-                  style={{
-                    backgroundColor: selectedCategory === cat.id ? '#e0f2fe' : 'transparent', // Light Cyan bg
-                    color: selectedCategory === cat.id ? '#0284c7' : '#64748b', // Darker Cyan text
-                    fontWeight: selectedCategory === cat.id ? '600' : '500',
-                    fontSize: '14px',
-                    padding: '10px 16px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <i className={`bi ${cat.icon}`} style={{ fontSize: '16px' }}></i>
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-
-            {user?.is_superuser && (
-              <>
-                <hr className="my-4 text-muted opacity-25" />
-                <div
-                  className="text-uppercase fw-bold mb-3"
-                  style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px' }}
-                >
-                  Sistema
-                </div>
-                <button
-                  onClick={() => navigate('/admin')}
-                  className="btn text-start d-flex align-items-center gap-3 w-100"
-                  style={{
-                    color: '#475569',
-                    fontWeight: '500',
-                    fontSize: '14px',
-                    padding: '10px 16px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                  <i className="bi bi-shield-lock" style={{ fontSize: '16px' }}></i>
-                  Administración
-                </button>
-              </>
-            )}
+        {/* Navigation */}
+        <div className="p-4 flex-grow-1 overflow-auto custom-scrollbar">
+          <div className="text-uppercase fw-bold mb-3" style={{ fontSize: '11px', color: '#64748b', letterSpacing: '1px' }}>
+            Navegación
           </div>
 
-          <div className="p-4 border-top border-light">
-            <div className="d-flex align-items-center gap-3 p-3 rounded-3" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-              <div
-                className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+          <div className="d-flex flex-column gap-2 mb-4">
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className="btn text-start d-flex align-items-center gap-3 w-100"
                 style={{
-                  width: '36px',
-                  height: '36px',
-                  background: brandCyan,
-                  color: 'white',
+                  backgroundColor: selectedCategory === cat.id ? 'rgba(14, 165, 233, 0.15)' : 'transparent',
+                  color: selectedCategory === cat.id ? '#38bdf8' : '#cbd5e1',
+                  fontWeight: selectedCategory === cat.id ? '600' : '500',
                   fontSize: '14px',
-                  fontWeight: 'bold'
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                  border: selectedCategory === cat.id ? '1px solid rgba(14, 165, 233, 0.3)' : '1px solid transparent',
+                  transition: 'all 0.2s',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedCategory !== cat.id) {
+                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)'
+                    e.currentTarget.style.color = '#f8fafc'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedCategory !== cat.id) {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.color = '#cbd5e1'
+                  }
                 }}
               >
-                {user.email?.charAt(0).toUpperCase()}
-              </div>
-              <div className="overflow-hidden">
-                <div style={{ fontSize: '13px', fontWeight: '600', color: '#334155' }} className="text-truncate">
-                  {user.full_name || 'Usuario'}
-                </div>
-                <div style={{ fontSize: '11px', color: '#94a3b8' }}>Conectado</div>
-              </div>
-            </div>
+                <i className={`bi ${cat.icon}`} style={{ fontSize: '18px', opacity: selectedCategory === cat.id ? 1 : 0.8 }}></i>
+                {cat.name}
+                {selectedCategory === cat.id && (
+                  <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: '3px', background: '#38bdf8', borderRadius: '0 4px 4px 0' }}></div>
+                )}
+              </button>
+            ))}
           </div>
+
+          {user?.is_superuser && (
+            <>
+              <div className="text-uppercase fw-bold mb-3" style={{ fontSize: '11px', color: '#64748b', letterSpacing: '1px' }}>
+                Sistema
+              </div>
+              <button
+                onClick={() => navigate('/admin')}
+                className="btn text-start d-flex align-items-center gap-3 w-100"
+                style={{
+                  color: '#cbd5e1',
+                  fontWeight: '500',
+                  fontSize: '14px',
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                  border: '1px solid transparent',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)'
+                  e.currentTarget.style.color = '#f8fafc'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                  e.currentTarget.style.color = '#cbd5e1'
+                }}
+              >
+                <i className="bi bi-shield-lock" style={{ fontSize: '18px', opacity: 0.8 }}></i>
+                Administración
+              </button>
+            </>
+          )}
         </div>
 
-        {/* Contenido Principal */}
-        <div className="flex-grow-1 p-4 p-lg-5 d-flex flex-column"> {/* added d-flex flex-column */}
-          <div>
-            <div className="d-flex justify-content-between align-items-end mb-5 border-bottom pb-4">
-              <div>
-                <h1 className="fw-bold mb-1" style={{ color: brandNavy, fontSize: '2rem' }}>
-                  Bienvenido a los  {user.full_name?.split(' ')[0] || 'Modulos Empresariales'}
-                </h1>
-                <p className="text-secondary mb-0">Selecciona un módulo para comenzar a trabajar.</p>
-              </div>
-              <div className="d-none d-md-block text-secondary" style={{ fontSize: '13px' }}>
-                {new Date().toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-              </div>
+        {/* User Card */}
+        <div className="p-4 border-top" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+          <div className="d-flex align-items-center gap-3 p-3 rounded-3 mb-3" style={{ background: 'rgba(15, 23, 42, 0.5)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #0ea5e9, #2563eb)', color: 'white', fontSize: '14px', fontWeight: 'bold' }}>
+              {user.email?.charAt(0).toUpperCase()}
             </div>
-
-            <div className="row g-4">
-              {filteredApps.map(app => {
-                const roleValue = user[`rol_${app.key}`]
-                const hasAccess = roleValue === 'admin' || roleValue === 'true' || roleValue === true
-                const isMaintenance = app.maintenance
-                const isDisabled = !hasAccess && !isMaintenance
-
-                return (
-                  <div key={app.key} className="col-12 col-md-6 col-xl-4 col-xxl-3">
-                    <div
-                      className="card h-100 border-0 shadow-sm"
-                      style={{
-                        borderRadius: '12px',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        background: 'white',
-                        overflow: 'hidden'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isDisabled && !isMaintenance) {
-                          e.currentTarget.style.transform = 'translateY(-3px)'
-                          e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)'
-                        e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
-                      }}
-                    >
-                      <div className="card-body p-3 d-flex flex-column">
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                          <div
-                            className="rounded-circle d-flex align-items-center justify-content-center"
-                            style={{
-                              width: '42px',
-                              height: '42px',
-                              background: isDisabled ? '#f1f5f9' : `${app.color}15`,
-                              color: isDisabled ? '#94a3b8' : app.color
-                            }}
-                          >
-                            <i className={`bi ${app.icon}`} style={{ fontSize: '20px' }}></i>
-                          </div>
-                          {!isDisabled && !isMaintenance && (
-                            <span className="badge rounded-pill bg-light text-secondary border" style={{ fontSize: '10px' }}>Activo</span>
-                          )}
-                        </div>
-
-                        <h6 className="fw-bold mb-1" style={{ color: isDisabled ? '#94a3b8' : '#1e293b', fontSize: '15px' }}>{app.name}</h6>
-                        <p className="text-secondary small mb-3 flex-grow-1" style={{ fontSize: '12px', lineHeight: '1.4' }}>
-                          {app.description}
-                        </p>
-
-                        <div>
-                          {isMaintenance ? (
-                            <button className="btn w-100 btn-warning disabled opacity-75 text-white fw-bold py-1" style={{ fontSize: '13px' }}>
-                              Mantenimiento
-                            </button>
-                          ) : isDisabled ? (
-                            <button className="btn w-100 btn-light text-secondary disabled py-1" style={{ fontSize: '13px' }}>
-                              <i className="bi bi-lock-fill me-2"></i> Sin Acceso
-                            </button>
-                          ) : (
-                            <a
-                              href={links[app.key]}
-                              className="btn w-100 fw-bold py-1.5"
-                              style={{
-                                background: brandCyan,
-                                color: 'white',
-                                border: 'none',
-                                fontSize: '13px',
-                                borderRadius: '6px',
-                                boxShadow: `0 2px 4px -1px ${brandCyan}40`
-                              }}
-                              onMouseEnter={(e) => e.target.style.filter = 'brightness(110%)'}
-                              onMouseLeave={(e) => e.target.style.filter = 'none'}
-                            >
-                              Entrar <i className="bi bi-arrow-right-short ms-1" style={{ fontSize: '14px', verticalAlign: 'middle' }}></i>
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                      <div style={{ height: '3px', background: isDisabled ? '#e2e8f0' : app.color }}></div>
-                    </div>
-                  </div>
-                )
-              })}
+            <div className="overflow-hidden flex-grow-1">
+              <div style={{ fontSize: '13px', fontWeight: '600', color: '#f8fafc' }} className="text-truncate">
+                {user.full_name || 'Usuario'}
+              </div>
+              <div style={{ fontSize: '11px', color: '#94a3b8' }}>{user.is_superuser ? 'Administrador' : 'Conectado'}</div>
             </div>
           </div>
-
-          <div className="mt-auto pt-5 text-center px-4">
-            <div className="border-top border-light-subtle w-100 pt-4">
-              <small className="text-muted" style={{ fontSize: '12px' }}>
-                © {new Date().getFullYear()} Somyl S.A. Portal Corporativo Integrado.
-              </small>
-            </div>
-          </div>
+          <button
+            className="btn w-100 d-flex justify-content-center align-items-center gap-2"
+            onClick={handleLogout}
+            style={{
+              background: 'rgba(239, 68, 68, 0.1)',
+              color: '#ef4444',
+              borderRadius: '8px',
+              padding: '10px 16px',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              fontSize: '13px',
+              fontWeight: '500',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#ef4444'
+              e.currentTarget.style.color = 'white'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'
+              e.currentTarget.style.color = '#ef4444'
+            }}
+          >
+            <i className="bi bi-box-arrow-right"></i> Cerrar Sesión
+          </button>
         </div>
       </div>
+
+      {/* Main Content Area */}
+      <div className="flex-grow-1 d-flex flex-column h-100 overflow-auto">
+        <div className="p-4 p-md-5">
+          {/* Mobile Header (Only visible on small screens since sidebar hides) */}
+          <div className="d-lg-none d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+            <div className="d-flex align-items-center gap-2">
+              <img src="/logo-somyl.ico" alt="Somyl" style={{ width: 24, height: 'auto' }} />
+              <span className="fw-bold" style={{ color: brandNavy }}>Portal Somyl</span>
+            </div>
+            <button onClick={handleLogout} className="btn btn-sm btn-outline-danger">
+              <i className="bi bi-box-arrow-right"></i>
+            </button>
+          </div>
+
+          <div className="d-flex justify-content-between align-items-end mb-5">
+            <div>
+              <h1 className="fw-bold mb-2" style={{ color: '#0f172a', fontSize: '2.2rem', letterSpacing: '-0.5px' }}>
+                Portal de Aplicaciones
+              </h1>
+              <p className="text-secondary mb-0" style={{ fontSize: '15px' }}>Gestión centralizada de módulos empresariales Somyl.</p>
+            </div>
+            <div className="d-none d-md-block text-secondary" style={{ fontSize: '13px', background: 'white', padding: '8px 16px', borderRadius: '20px', border: '1px solid #e2e8f0' }}>
+              <i className="bi bi-calendar3 me-2"></i>
+              {new Date().toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
+          </div>
+
+          <div className="row g-4">
+            {filteredApps.map(app => {
+              const roleValue = user[`rol_${app.key}`]
+              const hasAccess = roleValue === 'admin' || roleValue === 'true' || roleValue === true
+              const isMaintenance = app.maintenance
+              const isDisabled = !hasAccess && !isMaintenance
+
+              return (
+                <div key={app.key} className="col-12 col-md-6 col-xl-4 col-xxl-3 d-flex">
+                  <div
+                    className="card border-0 shadow-sm w-100"
+                    style={{
+                      borderRadius: '16px',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      background: 'white',
+                      overflow: 'hidden',
+                      position: 'relative',
+                      border: '1px solid #f1f5f9'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isDisabled && !isMaintenance) {
+                        e.currentTarget.style.transform = 'translateY(-4px)'
+                        e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'
+                        e.currentTarget.style.borderColor = app.color + '40'
+                        const button = e.currentTarget.querySelector('.launch-btn')
+                        if (button) {
+                          button.style.backgroundColor = app.color
+                          button.style.color = 'white'
+                        }
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)'
+                      e.currentTarget.style.borderColor = '#f1f5f9'
+                      const button = e.currentTarget.querySelector('.launch-btn')
+                      if (button) {
+                        button.style.backgroundColor = '#f8fafc'
+                        button.style.color = '#475569'
+                      }
+                    }}
+                  >
+                    {/* Top Color Accent Line */}
+                    <div style={{ height: '4px', background: isDisabled ? '#cbd5e1' : app.color, width: '100%' }}></div>
+
+                    <div className="card-body p-4 d-flex flex-column">
+                      <div className="d-flex justify-content-between align-items-start mb-4">
+                        <div
+                          className="rounded-4 d-flex align-items-center justify-content-center"
+                          style={{
+                            width: '48px',
+                            height: '48px',
+                            background: isDisabled ? '#f1f5f9' : `${app.color}15`,
+                            color: isDisabled ? '#94a3b8' : app.color,
+                            transition: 'all 0.3s ease'
+                          }}
+                        >
+                          <i className={`bi ${app.icon}`} style={{ fontSize: '22px' }}></i>
+                        </div>
+                        {!isDisabled && !isMaintenance && (
+                          <div className="d-flex align-items-center gap-2" style={{ background: '#f0fdf4', padding: '4px 8px', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
+                            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', animation: 'pulse 2s infinite' }}></div>
+                            <span style={{ fontSize: '10px', color: '#166534', fontWeight: '600' }}>ONLINE</span>
+                          </div>
+                        )}
+                        {isDisabled && !isMaintenance && (
+                          <span className="badge rounded-pill bg-light text-secondary border" style={{ fontSize: '10px' }}><i className="bi bi-lock-fill"></i> Bloqueado</span>
+                        )}
+                        {isMaintenance && (
+                          <span className="badge rounded-pill bg-warning text-dark border-0" style={{ fontSize: '10px' }}>En Mantención</span>
+                        )}
+                      </div>
+
+                      <h6 className="fw-bold mb-2" style={{ color: isDisabled ? '#94a3b8' : '#0f172a', fontSize: '17px' }}>
+                        {app.name}
+                      </h6>
+                      <p className="text-secondary mb-4 flex-grow-1" style={{ fontSize: '13px', lineHeight: '1.5', opacity: isDisabled ? 0.6 : 1 }}>
+                        {app.description}
+                      </p>
+
+                      <div>
+                        {isMaintenance ? (
+                          <button className="btn w-100 disabled text-white fw-bold py-2" style={{ fontSize: '13px', background: '#f59e0b', borderRadius: '8px' }}>
+                            Volvemos Pronto
+                          </button>
+                        ) : isDisabled ? (
+                          <button className="btn w-100 btn-light text-secondary disabled py-2" style={{ fontSize: '13px', borderRadius: '8px' }}>
+                            Solicitar Acceso
+                          </button>
+                        ) : (
+                          <a
+                            href={links[app.key]}
+                            className="btn w-100 fw-bold py-2 launch-btn d-flex align-items-center justify-content-center gap-2"
+                            style={{
+                              background: '#f8fafc',
+                              color: '#475569',
+                              border: '1px solid #e2e8f0',
+                              fontSize: '13.5px',
+                              borderRadius: '8px',
+                              transition: 'all 0.3s ease'
+                            }}
+                          >
+                            Ingresar al Módulo <i className="bi bi-box-arrow-up-right" style={{ fontSize: '13px' }}></i>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="mt-auto p-4 text-center">
+          <small className="text-muted" style={{ fontSize: '12px' }}>
+            © {new Date().getFullYear()} Somyl S.A. Portal Fibra Óptica Integrado.
+          </small>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes pulse {
+          0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+          70% { transform: scale(1); box-shadow: 0 0 0 4px rgba(34, 197, 94, 0); }
+          100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
+      `}</style>
     </div>
   )
 }
