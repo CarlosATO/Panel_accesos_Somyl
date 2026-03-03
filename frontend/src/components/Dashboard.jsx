@@ -276,9 +276,9 @@ function Dashboard({ user, setUser }) {
           <div className="d-flex justify-content-between align-items-end mb-5">
             <div>
               <h1 className="fw-bold mb-2" style={{ color: '#0f172a', fontSize: '2.2rem', letterSpacing: '-0.5px' }}>
-                Portal de Aplicaciones
+                ¡Hola, {user.full_name?.split(' ')[0] || user.email?.split('@')[0] || 'Usuario'}! 👋
               </h1>
-              <p className="text-secondary mb-0" style={{ fontSize: '15px' }}>Gestión centralizada de módulos empresariales Somyl.</p>
+              <p className="text-secondary mb-0" style={{ fontSize: '15px' }}>Selecciona un módulo empresarial para comenzar a trabajar.</p>
             </div>
             <div className="d-none d-md-block text-secondary" style={{ fontSize: '13px', background: 'white', padding: '8px 16px', borderRadius: '20px', border: '1px solid #e2e8f0' }}>
               <i className="bi bi-calendar3 me-2"></i>
@@ -286,7 +286,7 @@ function Dashboard({ user, setUser }) {
             </div>
           </div>
 
-          <div className="row g-4">
+          <div className="row g-3">
             {filteredApps.map(app => {
               const roleValue = user[`rol_${app.key}`]
               const hasAccess = roleValue === 'admin' || roleValue === 'true' || roleValue === true
@@ -294,7 +294,7 @@ function Dashboard({ user, setUser }) {
               const isDisabled = !hasAccess && !isMaintenance
 
               return (
-                <div key={app.key} className="col-12 col-md-6 col-xl-4 col-xxl-3 d-flex">
+                <div key={app.key} className="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex">
                   <div
                     className="card border-0 shadow-sm w-100"
                     style={{
