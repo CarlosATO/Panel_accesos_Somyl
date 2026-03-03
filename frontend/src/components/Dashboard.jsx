@@ -14,7 +14,7 @@ function Dashboard({ user, setUser }) {
   // Categorías con colores actualizados (para mantener distinción visual pero menos agresiva)
   // Finanzas: Verde Esmeralda | Operaciones: Azul Real | Logística: Naranja/Ámbar
   const apps = [
-    { key: 'ordenes', name: 'Órdenes de Pago', description: 'Gestión de pagos y finanzas', icon: 'bi-receipt-cutoff', color: '#10b981', category: 'finance' },
+    { key: 'ordenes', name: 'Adquisiciones', description: 'Gestión de pagos y finanzas', icon: 'bi-receipt-cutoff', color: '#10b981', category: 'finance' },
     { key: 'flota', name: 'Control Flota', description: 'Vehículos y mantenimiento', icon: 'bi-truck', color: '#0ea5e9', category: 'logistics' },
     { key: 'logistica', name: 'Logística', description: 'Inventario y Stock de Proyectos', icon: 'bi-box-seam', color: '#f59e0b', category: 'logistics' },
     { key: 'produccion', name: 'Construcción', description: 'Gestión de obras y producción', icon: 'bi-building', color: '#f97316', category: 'logistics' },

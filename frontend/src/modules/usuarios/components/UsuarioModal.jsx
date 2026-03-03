@@ -96,7 +96,7 @@ function UsuarioModal({ show, onHide, onSave, editingUser, currentUserId }) {
   }
 
   const apps = [
-    { key: 'ordenes', name: 'Órdenes de Pago', icon: 'bi-receipt-cutoff', color: '#0d9488' },
+    { key: 'ordenes', name: 'Adquisiciones', icon: 'bi-receipt-cutoff', color: '#0d9488' },
     { key: 'flota', name: 'Control Flota', icon: 'bi-truck', color: '#06b6d4' },
     { key: 'produccion', name: 'Construcción', icon: 'bi-buildings', color: '#7c3aed' },
     { key: 'logistica', name: 'Logística', icon: 'bi-box-seam', color: '#f59e0b' },
