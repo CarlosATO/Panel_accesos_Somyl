@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { LayoutGrid, Wallet, GitBranch, Truck, Receipt, Package, Building2, Users, ShieldCheck, LogOut, Calendar, Lock, Wrench } from 'lucide-react'
 
 function Dashboard({ user, setUser }) {
   const [links, setLinks] = useState({})
@@ -7,24 +8,24 @@ function Dashboard({ user, setUser }) {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const navigate = useNavigate()
 
-  // SOMYL CORPORATE IDENTITY - TECH MINIMALIST
-  const brandCyan = '#0ea5e9' // Sky Blue
-  const brandNavy = '#0f172a' // Slate 900
+  // SOMYL CORPORATE IDENTITY - DARK PREMIUM
+  const brandCyan = '#0ea5e9' // Sky Blue accent
+  const brandNavy = '#0f172a' // Slate 900 (kept for reference)
 
-  // Categorías con colores tech
+  // Categorías - iconos unificados en acento cyan monocromático
   const apps = [
-    { key: 'ordenes', name: 'Adquisiciones', description: 'Gestión de pagos y finanzas', icon: 'bi-receipt-cutoff', color: '#10b981', category: 'finance' },
-    { key: 'flota', name: 'Control Flota', description: 'Vehículos y mantenimiento', icon: 'bi-truck', color: '#0ea5e9', category: 'logistics' },
-    { key: 'logistica', name: 'Logística', description: 'Inventario y Stock de Proyectos', icon: 'bi-box-seam', color: '#f59e0b', category: 'logistics' },
-    { key: 'produccion', name: 'Construcción', description: 'Gestión de obras y producción', icon: 'bi-building', color: '#f97316', category: 'logistics' },
-    { key: 'rrhh', name: 'Recursos Humanos', description: 'Gestión de Personal y Nómina', icon: 'bi-people', color: '#db2777', category: 'finance' },
+    { key: 'ordenes', name: 'Adquisiciones', description: 'Gestión de pagos y finanzas', Icon: Receipt, color: '#0ea5e9', category: 'finance' },
+    { key: 'flota', name: 'Control Flota', description: 'Vehículos y mantenimiento', Icon: Truck, color: '#0ea5e9', category: 'logistics' },
+    { key: 'logistica', name: 'Logística', description: 'Inventario y Stock de Proyectos', Icon: Package, color: '#0ea5e9', category: 'logistics' },
+    { key: 'produccion', name: 'Construcción', description: 'Gestión de obras y producción', Icon: Building2, color: '#0ea5e9', category: 'logistics' },
+    { key: 'rrhh', name: 'Recursos Humanos', description: 'Gestión de Personal y Nómina', Icon: Users, color: '#0ea5e9', category: 'finance' },
   ]
 
   const categories = [
-    { id: 'all', name: 'Todas las Apps', icon: 'bi-grid-3x3-gap' },
-    { id: 'finance', name: 'Finanzas', icon: 'bi-wallet2' },
-    { id: 'operations', name: 'Operaciones', icon: 'bi-diagram-3' },
-    { id: 'logistics', name: 'Logística', icon: 'bi-truck' }
+    { id: 'all', name: 'Todas las Apps', Icon: LayoutGrid },
+    { id: 'finance', name: 'Finanzas', Icon: Wallet },
+    { id: 'operations', name: 'Operaciones', Icon: GitBranch },
+    { id: 'logistics', name: 'Logística', Icon: Truck }
   ]
 
   useEffect(() => {
@@ -104,99 +105,149 @@ function Dashboard({ user, setUser }) {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100" style={{ background: '#f8fafc' }}>
+      <div className="d-flex justify-content-center align-items-center min-vh-100" style={{ background: '#0a0a0a' }}>
         <div className="text-center">
-          <div className="spinner-border" role="status" style={{ width: '3rem', height: '3rem', color: brandCyan, borderWidth: '4px' }}>
+          <div className="spinner-border" role="status" style={{ width: '3rem', height: '3rem', color: brandCyan, borderWidth: '3px' }}>
             <span className="visually-hidden">Cargando...</span>
           </div>
-          <p className="mt-3 text-secondary fw-medium">Cargando Módulos...</p>
+          <p className="mt-3 fw-medium" style={{ color: '#52525b', fontSize: '13px', letterSpacing: '0.5px' }}>Cargando Módulos...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-vh-100 d-flex" style={{ background: '#f8fafc' }}>
+    <div className="min-vh-100 d-flex p-3 gap-3" style={{ background: '#09090b', color: '#d4d4d8', position: 'relative', overflow: 'hidden' }}>
 
-      {/* Sidebar Dark/Tech */}
+      {/* ── Ambient Glow Layer ── */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+        {/* Blob 1 — Cyan top-left */}
+        <div style={{
+          position: 'absolute',
+          top: '-10%',
+          left: '-5%',
+          width: '45vw',
+          height: '45vw',
+          borderRadius: '50%',
+          background: '#0ea5e9',
+          opacity: 0.13,
+          filter: 'blur(120px)',
+          animation: 'blob1 22s infinite alternate ease-in-out'
+        }} />
+        {/* Blob 2 — Indigo bottom-right */}
+        <div style={{
+          position: 'absolute',
+          bottom: '-15%',
+          right: '-5%',
+          width: '40vw',
+          height: '40vw',
+          borderRadius: '50%',
+          background: '#4f46e5',
+          opacity: 0.11,
+          filter: 'blur(130px)',
+          animation: 'blob2 26s infinite alternate ease-in-out',
+          animationDelay: '2s'
+        }} />
+        {/* Blob 3 — Emerald top-right */}
+        <div style={{
+          position: 'absolute',
+          top: '5%',
+          right: '10%',
+          width: '30vw',
+          height: '30vw',
+          borderRadius: '50%',
+          background: '#10b981',
+          opacity: 0.09,
+          filter: 'blur(110px)',
+          animation: 'blob3 18s infinite alternate ease-in-out',
+          animationDelay: '4s'
+        }} />
+      </div>
+
+      {/* ── Sidebar — Floating Glass Panel ── */}
       <div
-        className="d-none d-lg-flex flex-column shadow-lg"
+        className="d-none d-lg-flex flex-column"
         style={{
-          width: '280px',
-          background: brandNavy,
-          color: '#e2e8f0',
+          width: '240px',
+          flexShrink: 0,
+          background: 'rgba(255, 255, 255, 0.03)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: '20px',
           position: 'sticky',
-          top: 0,
-          height: '100vh',
-          zIndex: 1020,
-          transition: 'all 0.3s ease'
+          top: '1rem',
+          height: 'calc(100vh - 2rem)',
+          zIndex: 10,
+          transition: 'all 0.3s ease',
+          overflow: 'hidden'
         }}
       >
         {/* Logo Section */}
-        <div className="p-4 d-flex align-items-center gap-3 border-bottom" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-          <div style={{ background: 'white', padding: '6px', borderRadius: '8px' }}>
-            <img src="/logo-somyl.ico" alt="Somyl" style={{ width: 28, height: 'auto', display: 'block' }} />
+        <div className="p-4 d-flex align-items-center gap-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ background: 'rgba(255,255,255,0.08)', padding: '8px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <img src="/logo-somyl.ico" alt="Somyl" style={{ width: 26, height: 'auto', display: 'block' }} />
           </div>
-          <span style={{ fontWeight: 600, fontSize: '18px', color: '#f8fafc', letterSpacing: '0.5px' }}>Somyl Portal</span>
+          <span style={{ fontWeight: 600, fontSize: '17px', color: '#f4f4f5', letterSpacing: '0.3px' }}>Somyl Portal</span>
         </div>
 
         {/* Navigation */}
         <div className="p-4 flex-grow-1 overflow-auto custom-scrollbar">
-          <div className="text-uppercase fw-bold mb-3" style={{ fontSize: '11px', color: '#64748b', letterSpacing: '1px' }}>
+          <div className="text-uppercase fw-bold mb-3" style={{ fontSize: '10px', color: '#52525b', letterSpacing: '1.2px' }}>
             Navegación
           </div>
 
-          <div className="d-flex flex-column gap-2 mb-4">
+          <div className="d-flex flex-column gap-1 mb-4">
             {categories.map(cat => (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
                 className="btn text-start d-flex align-items-center gap-3 w-100"
                 style={{
-                  backgroundColor: selectedCategory === cat.id ? 'rgba(14, 165, 233, 0.15)' : 'transparent',
-                  color: selectedCategory === cat.id ? '#38bdf8' : '#cbd5e1',
-                  fontWeight: selectedCategory === cat.id ? '600' : '500',
+                  backgroundColor: selectedCategory === cat.id ? 'rgba(14, 165, 233, 0.12)' : 'transparent',
+                  color: selectedCategory === cat.id ? '#38bdf8' : '#71717a',
+                  fontWeight: selectedCategory === cat.id ? '600' : '400',
                   fontSize: '14px',
-                  padding: '12px 16px',
+                  padding: '10px 14px',
                   borderRadius: '10px',
-                  border: selectedCategory === cat.id ? '1px solid rgba(14, 165, 233, 0.3)' : '1px solid transparent',
-                  transition: 'all 0.2s',
+                  border: selectedCategory === cat.id ? '1px solid rgba(14, 165, 233, 0.2)' : '1px solid transparent',
+                  transition: 'all 0.2s ease',
                   position: 'relative',
                   overflow: 'hidden'
                 }}
                 onMouseEnter={(e) => {
                   if (selectedCategory !== cat.id) {
-                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)'
-                    e.currentTarget.style.color = '#f8fafc'
+                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'
+                    e.currentTarget.style.color = '#e4e4e7'
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (selectedCategory !== cat.id) {
                     e.currentTarget.style.backgroundColor = 'transparent'
-                    e.currentTarget.style.color = '#cbd5e1'
+                    e.currentTarget.style.color = '#71717a'
                   }
                 }}
               >
-                <i className={`bi ${cat.icon}`} style={{ fontSize: '18px', opacity: selectedCategory === cat.id ? 1 : 0.8 }}></i>
-                {cat.name}
                 {selectedCategory === cat.id && (
-                  <div style={{ position: 'absolute', left: 0, top: '20%', bottom: '20%', width: '3px', background: '#38bdf8', borderRadius: '0 4px 4px 0' }}></div>
+                  <div style={{ position: 'absolute', left: 0, top: '22%', bottom: '22%', width: '3px', background: 'linear-gradient(180deg, #38bdf8, #0ea5e9)', borderRadius: '0 3px 3px 0' }}></div>
                 )}
+                <cat.Icon size={16} strokeWidth={1.5} style={{ opacity: selectedCategory === cat.id ? 1 : 0.6, flexShrink: 0 }} />
+                {cat.name}
               </button>
             ))}
           </div>
 
           {user?.is_superuser && (
             <>
-              <div className="text-uppercase fw-bold mb-3" style={{ fontSize: '11px', color: '#64748b', letterSpacing: '1px' }}>
+              <div className="text-uppercase fw-bold mb-3" style={{ fontSize: '10px', color: '#52525b', letterSpacing: '1.2px' }}>
                 Sistema
               </div>
               <button
                 onClick={() => navigate('/admin')}
                 className="btn text-start d-flex align-items-center gap-3 w-100"
                 style={{
-                  color: '#cbd5e1',
-                  fontWeight: '500',
+                  color: '#71717a',
+                  fontWeight: '400',
                   fontSize: '14px',
                   padding: '12px 16px',
                   borderRadius: '10px',
@@ -204,15 +255,15 @@ function Dashboard({ user, setUser }) {
                   transition: 'all 0.2s'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)'
-                  e.currentTarget.style.color = '#f8fafc'
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'
+                  e.currentTarget.style.color = '#e4e4e7'
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
-                  e.currentTarget.style.color = '#cbd5e1'
+                  e.currentTarget.style.color = '#71717a'
                 }}
               >
-                <i className="bi bi-shield-lock" style={{ fontSize: '18px', opacity: 0.8 }}></i>
+                <ShieldCheck size={16} strokeWidth={1.5} style={{ opacity: 0.6, flexShrink: 0 }} />
                 Administración
               </button>
             </>
@@ -220,68 +271,83 @@ function Dashboard({ user, setUser }) {
         </div>
 
         {/* User Card */}
-        <div className="p-4 border-top" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-          <div className="d-flex align-items-center gap-3 p-3 rounded-3 mb-3" style={{ background: 'rgba(15, 23, 42, 0.5)', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #0ea5e9, #2563eb)', color: 'white', fontSize: '14px', fontWeight: 'bold' }}>
+        <div className="p-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <div className="d-flex align-items-center gap-3 p-3 rounded-3 mb-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '34px', height: '34px', background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)', color: 'white', fontSize: '13px', fontWeight: '600' }}>
               {user.email?.charAt(0).toUpperCase()}
             </div>
             <div className="overflow-hidden flex-grow-1">
-              <div style={{ fontSize: '13px', fontWeight: '600', color: '#f8fafc' }} className="text-truncate">
+              <div style={{ fontSize: '13px', fontWeight: '500', color: '#f4f4f5' }} className="text-truncate">
                 {user.full_name || 'Usuario'}
               </div>
-              <div style={{ fontSize: '11px', color: '#94a3b8' }}>{user.is_superuser ? 'Administrador' : 'Conectado'}</div>
+              <div style={{ fontSize: '11px', color: '#52525b' }}>{user.is_superuser ? 'Administrador' : 'Conectado'}</div>
             </div>
           </div>
           <button
             className="btn w-100 d-flex justify-content-center align-items-center gap-2"
             onClick={handleLogout}
             style={{
-              background: 'rgba(239, 68, 68, 0.1)',
-              color: '#ef4444',
+              background: 'rgba(239, 68, 68, 0.07)',
+              color: '#f87171',
               borderRadius: '8px',
-              padding: '10px 16px',
-              border: '1px solid rgba(239, 68, 68, 0.2)',
+              padding: '9px 16px',
+              border: '1px solid rgba(239, 68, 68, 0.12)',
               fontSize: '13px',
-              fontWeight: '500',
-              transition: 'all 0.2s'
+              fontWeight: '400',
+              transition: 'all 0.2s ease',
+              letterSpacing: '0.2px'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#ef4444'
-              e.currentTarget.style.color = 'white'
+              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'
+              e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)'
+              e.currentTarget.style.color = '#fca5a5'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'
-              e.currentTarget.style.color = '#ef4444'
+              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.07)'
+              e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.12)'
+              e.currentTarget.style.color = '#f87171'
             }}
           >
-            <i className="bi bi-box-arrow-right"></i> Cerrar Sesión
+            <LogOut size={14} strokeWidth={1.5} /> Cerrar Sesión
           </button>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-grow-1 d-flex flex-column h-100 overflow-auto">
+      {/* ── Main Content — Floating Glass Panel ── */}
+      <div
+        className="flex-grow-1 d-flex flex-column overflow-auto"
+        style={{
+          background: 'rgba(255, 255, 255, 0.02)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          borderRadius: '20px',
+          minHeight: 0,
+          position: 'relative',
+          zIndex: 10
+        }}
+      >
         <div className="p-4 p-md-5">
-          {/* Mobile Header (Only visible on small screens since sidebar hides) */}
-          <div className="d-lg-none d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+          {/* Mobile Header */}
+          <div className="d-lg-none d-flex justify-content-between align-items-center mb-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
             <div className="d-flex align-items-center gap-2">
-              <img src="/logo-somyl.ico" alt="Somyl" style={{ width: 24, height: 'auto' }} />
-              <span className="fw-bold" style={{ color: brandNavy }}>Portal Somyl</span>
+              <img src="/logo-somyl.ico" alt="Somyl" style={{ width: 22, height: 'auto' }} />
+              <span className="fw-semibold" style={{ color: '#f4f4f5', fontSize: '15px' }}>Portal Somyl</span>
             </div>
-            <button onClick={handleLogout} className="btn btn-sm btn-outline-danger">
-              <i className="bi bi-box-arrow-right"></i>
+            <button onClick={handleLogout} className="btn btn-sm d-flex align-items-center" style={{ background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '8px' }}>
+              <LogOut size={14} strokeWidth={1.5} />
             </button>
           </div>
 
           <div className="d-flex justify-content-between align-items-end mb-5">
             <div>
-              <h1 className="fw-bold mb-2" style={{ color: '#0f172a', fontSize: '2.2rem', letterSpacing: '-0.5px' }}>
+              <h1 className="fw-semibold mb-2" style={{ color: '#ffffff', fontSize: '2rem', letterSpacing: '-0.5px' }}>
                 ¡Hola, {user.full_name?.split(' ')[0] || user.email?.split('@')[0] || 'Usuario'}! 👋
               </h1>
-              <p className="text-secondary mb-0" style={{ fontSize: '15px' }}>Selecciona un módulo empresarial para comenzar a trabajar.</p>
+              <p className="mb-0" style={{ color: '#71717a', fontSize: '14px' }}>Selecciona un módulo empresarial para comenzar a trabajar.</p>
             </div>
-            <div className="d-none d-md-block text-secondary" style={{ fontSize: '13px', background: 'white', padding: '8px 16px', borderRadius: '20px', border: '1px solid #e2e8f0' }}>
-              <i className="bi bi-calendar3 me-2"></i>
+            <div className="d-none d-md-flex align-items-center gap-2" style={{ fontSize: '12px', color: '#94a3b8', background: 'rgba(255,255,255,0.03)', padding: '8px 16px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <Calendar size={13} strokeWidth={1.5} style={{ opacity: 0.6, flexShrink: 0 }} />
               {new Date().toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </div>
           </div>
@@ -304,70 +370,81 @@ function Dashboard({ user, setUser }) {
                     }}
                   >
                     <div
-                      className="card border-0 shadow-sm w-100 d-flex align-items-center justify-content-center"
+                      className="w-100 d-flex align-items-center justify-content-center"
                       style={{
-                        aspectRatio: '1/1', // Force square shape like an app icon!
-                        borderRadius: '24px', // Rounder corners (iOS/Odoo style)
+                        aspectRatio: '1/1',
+                        borderRadius: '22px',
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        background: 'white',
+                        background: isDisabled ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)',
+                        border: isDisabled ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(255,255,255,0.08)',
                         position: 'relative',
-                        border: '1px solid #f1f5f9'
                       }}
                       onMouseEnter={(e) => {
                         if (!isDisabled && !isMaintenance) {
-                          e.currentTarget.style.transform = 'translateY(-6px)'
-                          e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'
-                          e.currentTarget.style.borderColor = app.color + '40'
+                          e.currentTarget.style.transform = 'translateY(-5px)'
+                          e.currentTarget.style.background = 'rgba(14, 165, 233, 0.08)'
+                          e.currentTarget.style.borderColor = 'rgba(14, 165, 233, 0.25)'
+                          e.currentTarget.style.boxShadow = '0 20px 40px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(14, 165, 233, 0.1)'
                         }
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.transform = 'translateY(0)'
-                        e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)'
-                        e.currentTarget.style.borderColor = '#f1f5f9'
+                        e.currentTarget.style.background = isDisabled ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)'
+                        e.currentTarget.style.borderColor = isDisabled ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)'
+                        e.currentTarget.style.boxShadow = 'none'
                       }}
                     >
-                      {/* Top Accent Line Removed for a cleaner app icon look. Relying solely on the icon's primary color. */}
-
-                      {/* Status Indicators (Absolute Positioned) */}
+                      {/* Status Indicator */}
                       <div className="position-absolute top-0 end-0 mt-2 me-2">
                         {!isDisabled && !isMaintenance && (
-                          <div className="d-flex align-items-center justify-content-center" title="Online" style={{ width: 10, height: 10, borderRadius: '50%', background: '#22c55e', border: '2px solid white', animation: 'pulse 2s infinite' }}></div>
+                          <div
+                            title="Online"
+                            style={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
+                              background: '#22c55e',
+                              boxShadow: '0 0 8px rgba(34, 197, 94, 0.6)',
+                              animation: 'pulse 2s infinite'
+                            }}
+                          ></div>
                         )}
                         {isDisabled && !isMaintenance && (
-                          <div className="d-flex align-items-center justify-content-center text-muted" title="Sin Acceso"><i className="bi bi-lock-fill" style={{ fontSize: '10px' }}></i></div>
+                          <Lock size={10} strokeWidth={2} style={{ color: '#3f3f46' }} title="Sin Acceso" />
                         )}
                         {isMaintenance && (
-                          <div className="d-flex align-items-center justify-content-center text-warning" title="En Mantenimiento"><i className="bi bi-tools" style={{ fontSize: '10px' }}></i></div>
+                          <Wrench size={10} strokeWidth={1.5} style={{ color: '#f59e0b' }} title="En Mantenimiento" />
                         )}
                       </div>
 
-                      {/* Large App Icon */}
+                      {/* App Icon */}
                       <div
-                        className="rounded-4 d-flex align-items-center justify-content-center mb-1"
+                        className="d-flex align-items-center justify-content-center"
                         style={{
-                          width: '64px', // Larger size for app icon
-                          height: '64px',
-                          background: isDisabled ? '#f1f5f9' : `linear-gradient(135deg, ${app.color}15, ${app.color}05)`,
-                          color: isDisabled ? '#94a3b8' : app.color,
+                          width: '60px',
+                          height: '60px',
+                          borderRadius: '16px',
+                          background: isDisabled ? 'rgba(255,255,255,0.03)' : 'rgba(14, 165, 233, 0.08)',
+                          color: isDisabled ? '#3f3f46' : '#38bdf8',
                           transition: 'all 0.3s ease'
                         }}
                       >
-                        <i className={`bi ${app.icon}`} style={{ fontSize: '32px' }}></i>
+                        <app.Icon size={28} strokeWidth={1.5} />
                       </div>
                     </div>
 
-                    {/* App Title (Outside the square box, below it, just like OS app grids) */}
+                    {/* App Title */}
                     <h6
-                      className="fw-bold text-center mt-3 px-1"
+                      className="fw-medium text-center mt-3 px-1"
                       style={{
-                        color: isDisabled ? '#94a3b8' : '#334155',
-                        fontSize: '14px',
-                        lineHeight: '1.2',
+                        color: isDisabled ? '#3f3f46' : '#a1a1aa',
+                        fontSize: '13px',
+                        lineHeight: '1.3',
                         maxWidth: '100%',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         display: '-webkit-box',
-                        WebkitLineClamp: 2, // Maximum 2 lines for title wrap
+                        WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical'
                       }}
                     >
@@ -380,8 +457,8 @@ function Dashboard({ user, setUser }) {
           </div>
         </div>
 
-        <div className="mt-auto p-4 text-center">
-          <small className="text-muted" style={{ fontSize: '12px' }}>
+        <div className="mt-auto p-4 pe-5 text-end">
+          <small style={{ fontSize: '11px', color: '#64748b' }}>
             © {new Date().getFullYear()} Somyl S.A. Portal Fibra Óptica Integrado.
           </small>
         </div>
@@ -389,23 +466,32 @@ function Dashboard({ user, setUser }) {
 
       <style>{`
         @keyframes pulse {
-          0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-          70% { transform: scale(1); box-shadow: 0 0 0 4px rgba(34, 197, 94, 0); }
+          0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
+          70%  { transform: scale(1);    box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
           100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 5px;
+        @keyframes blob1 {
+          0%   { transform: translate(0px,   0px)   scale(1);    }
+          33%  { transform: translate(80px,  -60px) scale(1.08); }
+          66%  { transform: translate(-50px,  90px) scale(0.95); }
+          100% { transform: translate(60px,   40px) scale(1.04); }
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
+        @keyframes blob2 {
+          0%   { transform: translate(0px,    0px)   scale(1);    }
+          33%  { transform: translate(-90px,  50px)  scale(1.06); }
+          66%  { transform: translate(70px,  -80px)  scale(0.97); }
+          100% { transform: translate(-40px, -30px)  scale(1.03); }
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 4px;
+        @keyframes blob3 {
+          0%   { transform: translate(0px,   0px)    scale(1);    }
+          33%  { transform: translate(-60px, 80px)   scale(1.1);  }
+          66%  { transform: translate(100px, -40px)  scale(0.93); }
+          100% { transform: translate(30px,  60px)   scale(1.05); }
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.12); }
       `}</style>
     </div>
   )

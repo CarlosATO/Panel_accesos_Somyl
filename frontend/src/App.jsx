@@ -30,16 +30,25 @@ function App() {
   }, [])
 
   if (loading) {
-    return <div className="d-flex justify-content-center align-items-center min-vh-100">
-      <div className="spinner-border" role="status">
-        <span className="visually-hidden">Loading...</span>
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center min-vh-100"
+        style={{ background: '#0a0a0a' }}
+      >
+        <div
+          className="spinner-border"
+          role="status"
+          style={{ color: '#0ea5e9', width: '2.5rem', height: '2.5rem', borderWidth: '3px' }}
+        >
+          <span className="visually-hidden">Loading...</span>
+        </div>
       </div>
-    </div>
+    )
   }
 
   return (
     <Router>
-      <div className="App">
+      <div className="App" style={{ background: '#0a0a0a', minHeight: '100vh' }}>
         <Routes>
           <Route path="/login" element={<Navigate to="/" />} />
           <Route path="/" element={user ? <Dashboard user={user} setUser={setUser} /> : <Login setUser={setUser} />} />
