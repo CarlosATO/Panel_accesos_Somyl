@@ -286,7 +286,7 @@ function Dashboard({ user, setUser }) {
             </div>
           </div>
 
-          <div className="row g-3">
+          <div className="row g-4 justify-content-start">
             {filteredApps.map(app => {
               const roleValue = user[`rol_${app.key}`]
               const hasAccess = roleValue === 'admin' || roleValue === 'true' || roleValue === true
@@ -294,106 +294,86 @@ function Dashboard({ user, setUser }) {
               const isDisabled = !hasAccess && !isMaintenance
 
               return (
-                <div key={app.key} className="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex">
-                  <div
-                    className="card border-0 shadow-sm w-100"
-                    style={{
-                      borderRadius: '16px',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      background: 'white',
-                      overflow: 'hidden',
-                      position: 'relative',
-                      border: '1px solid #f1f5f9'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isDisabled && !isMaintenance) {
-                        e.currentTarget.style.transform = 'translateY(-4px)'
-                        e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'
-                        e.currentTarget.style.borderColor = app.color + '40'
-                        const button = e.currentTarget.querySelector('.launch-btn')
-                        if (button) {
-                          button.style.backgroundColor = app.color
-                          button.style.color = 'white'
-                        }
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)'
-                      e.currentTarget.style.borderColor = '#f1f5f9'
-                      const button = e.currentTarget.querySelector('.launch-btn')
-                      if (button) {
-                        button.style.backgroundColor = '#f8fafc'
-                        button.style.color = '#475569'
-                      }
+                <div key={app.key} className="col-6 col-sm-4 col-md-3 col-xl-2 d-flex justify-content-center">
+                  <a
+                    href={isDisabled || isMaintenance ? '#' : links[app.key]}
+                    className="text-decoration-none w-100 d-flex flex-column align-items-center"
+                    style={{ cursor: isDisabled || isMaintenance ? 'not-allowed' : 'pointer' }}
+                    onClick={(e) => {
+                      if (isDisabled || isMaintenance) e.preventDefault()
                     }}
                   >
-                    {/* Top Color Accent Line */}
-                    <div style={{ height: '4px', background: isDisabled ? '#cbd5e1' : app.color, width: '100%' }}></div>
+                    <div
+                      className="card border-0 shadow-sm w-100 d-flex align-items-center justify-content-center"
+                      style={{
+                        aspectRatio: '1/1', // Force square shape like an app icon!
+                        borderRadius: '24px', // Rounder corners (iOS/Odoo style)
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        background: 'white',
+                        position: 'relative',
+                        border: '1px solid #f1f5f9'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isDisabled && !isMaintenance) {
+                          e.currentTarget.style.transform = 'translateY(-6px)'
+                          e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'
+                          e.currentTarget.style.borderColor = app.color + '40'
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)'
+                        e.currentTarget.style.borderColor = '#f1f5f9'
+                      }}
+                    >
+                      {/* Top Accent Line Removed for a cleaner app icon look. Relying solely on the icon's primary color. */}
 
-                    <div className="card-body p-4 d-flex flex-column">
-                      <div className="d-flex justify-content-between align-items-start mb-4">
-                        <div
-                          className="rounded-4 d-flex align-items-center justify-content-center"
-                          style={{
-                            width: '48px',
-                            height: '48px',
-                            background: isDisabled ? '#f1f5f9' : `${app.color}15`,
-                            color: isDisabled ? '#94a3b8' : app.color,
-                            transition: 'all 0.3s ease'
-                          }}
-                        >
-                          <i className={`bi ${app.icon}`} style={{ fontSize: '22px' }}></i>
-                        </div>
+                      {/* Status Indicators (Absolute Positioned) */}
+                      <div className="position-absolute top-0 end-0 mt-2 me-2">
                         {!isDisabled && !isMaintenance && (
-                          <div className="d-flex align-items-center gap-2" style={{ background: '#f0fdf4', padding: '4px 8px', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
-                            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', animation: 'pulse 2s infinite' }}></div>
-                            <span style={{ fontSize: '10px', color: '#166534', fontWeight: '600' }}>ONLINE</span>
-                          </div>
+                          <div className="d-flex align-items-center justify-content-center" title="Online" style={{ width: 10, height: 10, borderRadius: '50%', background: '#22c55e', border: '2px solid white', animation: 'pulse 2s infinite' }}></div>
                         )}
                         {isDisabled && !isMaintenance && (
-                          <span className="badge rounded-pill bg-light text-secondary border" style={{ fontSize: '10px' }}><i className="bi bi-lock-fill"></i> Bloqueado</span>
+                          <div className="d-flex align-items-center justify-content-center text-muted" title="Sin Acceso"><i className="bi bi-lock-fill" style={{ fontSize: '10px' }}></i></div>
                         )}
                         {isMaintenance && (
-                          <span className="badge rounded-pill bg-warning text-dark border-0" style={{ fontSize: '10px' }}>En Mantención</span>
+                          <div className="d-flex align-items-center justify-content-center text-warning" title="En Mantenimiento"><i className="bi bi-tools" style={{ fontSize: '10px' }}></i></div>
                         )}
                       </div>
 
-                      <h6 className="fw-bold mb-2" style={{ color: isDisabled ? '#94a3b8' : '#0f172a', fontSize: '17px' }}>
-                        {app.name}
-                      </h6>
-                      <p className="text-secondary mb-4 flex-grow-1" style={{ fontSize: '13px', lineHeight: '1.5', opacity: isDisabled ? 0.6 : 1 }}>
-                        {app.description}
-                      </p>
-
-                      <div>
-                        {isMaintenance ? (
-                          <button className="btn w-100 disabled text-white fw-bold py-2" style={{ fontSize: '13px', background: '#f59e0b', borderRadius: '8px' }}>
-                            Volvemos Pronto
-                          </button>
-                        ) : isDisabled ? (
-                          <button className="btn w-100 btn-light text-secondary disabled py-2" style={{ fontSize: '13px', borderRadius: '8px' }}>
-                            Solicitar Acceso
-                          </button>
-                        ) : (
-                          <a
-                            href={links[app.key]}
-                            className="btn w-100 fw-bold py-2 launch-btn d-flex align-items-center justify-content-center gap-2"
-                            style={{
-                              background: '#f8fafc',
-                              color: '#475569',
-                              border: '1px solid #e2e8f0',
-                              fontSize: '13.5px',
-                              borderRadius: '8px',
-                              transition: 'all 0.3s ease'
-                            }}
-                          >
-                            Ingresar al Módulo <i className="bi bi-box-arrow-up-right" style={{ fontSize: '13px' }}></i>
-                          </a>
-                        )}
+                      {/* Large App Icon */}
+                      <div
+                        className="rounded-4 d-flex align-items-center justify-content-center mb-1"
+                        style={{
+                          width: '64px', // Larger size for app icon
+                          height: '64px',
+                          background: isDisabled ? '#f1f5f9' : `linear-gradient(135deg, ${app.color}15, ${app.color}05)`,
+                          color: isDisabled ? '#94a3b8' : app.color,
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        <i className={`bi ${app.icon}`} style={{ fontSize: '32px' }}></i>
                       </div>
                     </div>
-                  </div>
+
+                    {/* App Title (Outside the square box, below it, just like OS app grids) */}
+                    <h6
+                      className="fw-bold text-center mt-3 px-1"
+                      style={{
+                        color: isDisabled ? '#94a3b8' : '#334155',
+                        fontSize: '14px',
+                        lineHeight: '1.2',
+                        maxWidth: '100%',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2, // Maximum 2 lines for title wrap
+                        WebkitBoxOrient: 'vertical'
+                      }}
+                    >
+                      {app.name}
+                    </h6>
+                  </a>
                 </div>
               )
             })}
