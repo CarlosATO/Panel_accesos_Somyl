@@ -94,16 +94,8 @@ def get_billing_status():
         estado = suscripcion.get('estado', 'PENDIENTE')
         has_subscription = (estado == 'ACTIVA')
         
-        if not has_subscription:
-            return jsonify({
-                'has_subscription': False,
-                'status': estado,
-                'locked': True,
-                'message': f'Suscripción {estado}'
-            }), 403
-            
         return jsonify({
-            'has_subscription': True,
+            'has_subscription': estado == 'ACTIVA',
             'status': estado,
             'expiry_date': suscripcion.get('fecha_vencimiento'),
             'mp_preference_id': suscripcion.get('mp_preference_id')

@@ -79,18 +79,20 @@ function Dashboard({ user, setUser }) {
 
   // ── Sincronización entre pestañas (Storage Event) ─────────────────────────
   useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const response = await fetch('/api/dashboard', { credentials: 'include' })
+        if (response.ok) {
+          const data = await response.json()
+          if (data.subscription) {
+            setSubscription(data.subscription)
+          }
+        }
+      } catch (err) { console.error(err) }
+    }
+
     const handleStorageChange = (e) => {
       if (e.key === 'subscriptionUpdated') {
-        // Alguien actualizó la suscripción en otra pestaña -> recargar
-        const fetchStatus = async () => {
-          try {
-            const response = await fetch('/api/billing/company/76.693.850-3', { credentials: 'include' })
-            if (response.ok) {
-              const data = await response.json()
-              setSubscription(data)
-            }
-          } catch (err) { console.error(err) }
-        }
         fetchStatus()
       }
     }
@@ -99,18 +101,7 @@ function Dashboard({ user, setUser }) {
     window.addEventListener('storage', handleStorageChange)
     
     // Escuchar evento custom (mismo tab)
-    const handleCustomEvent = () => {
-      const fetchStatus = async () => {
-        try {
-          const response = await fetch('/api/billing/company/76.693.850-3', { credentials: 'include' })
-          if (response.ok) {
-            const data = await response.json()
-            setSubscription(data)
-          }
-        } catch (err) { console.error(err) }
-      }
-      fetchStatus()
-    }
+    const handleCustomEvent = () => fetchStatus()
     window.addEventListener('subscriptionStateChanged', handleCustomEvent)
 
     return () => {
