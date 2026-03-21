@@ -30,7 +30,7 @@ function FacturacionUsuario({ user, onLogout }) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  const rut = '76.693.850-3' // RUT SOMYL
+  const rut = '76.002.581-K' // RUT SOMYL
 
   // Opciones de pago disponibles
   const opcionesPago = [

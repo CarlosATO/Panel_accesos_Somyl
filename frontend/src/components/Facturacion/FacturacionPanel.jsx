@@ -31,7 +31,7 @@ function FacturacionPanel({ user, onLogout }) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  const rut = '76.693.850-3' // RUT SOMYL - Hardcoded por ahora
+  const rut = '76.002.581-K' // RUT SOMYL - Hardcoded por ahora
 
   // ── Cargar datos de la empresa ────────────────────────────────────────────
   useEffect(() => {
