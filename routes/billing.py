@@ -67,20 +67,9 @@ def get_billing_status():
         return jsonify({'error': 'No autorizado'}), 401
     
     try:
-        user_data = session.get('user_data', {})
-        user_rut = user_data.get('rut_empresa') or user_data.get('empresa_rut') or '96.511.940-0'
-        
-        # Si no hay RUT, retornar estado por defecto sin error
-        if not user_rut:
-            return jsonify({
-                'has_subscription': True,  # Por defecto permitir acceso
-                'status': 'DEMO',
-                'message': 'Acceso sin suscripción configurada'
-            })
-        
-        # Para MercadoPago, consultamos la tabla empresa_suscripciones
+        # Para MercadoPago, en un sistema single-tenant, obtenemos el estado global más reciente
         sb = get_supabase()
-        resp = sb.table('empresa_suscripciones').select('*').eq('rut_empresa', user_rut).execute()
+        resp = sb.table('empresa_suscripciones').select('*').order('updated_at', desc=True).limit(1).execute()
         
         if not resp.data:
             # No tiene suscripción registrada, permitir acceso de todos modos

@@ -18,13 +18,13 @@ if not url or not key:
 supabase = create_client(url, key)
 
 # Obtener un usuario de ejemplo para ver las columnas
-response = supabase.table('empresa_suscripciones').select("*").limit(1).execute()
+response = supabase.table('empresa_suscripciones').select("*").execute()
 
 if response.data:
-    user = response.data[0]
-    print("Columnas disponibles en usuarios_sso:")
-    print("-" * 50)
-    for key, value in user.items():
-        print(f"  {key}: {type(value).__name__} = {value}")
+    print(f"Total rows: {len(response.data)}")
+    for i, row in enumerate(response.data):
+        print(f"\n--- Fila {i+1} ---")
+        for key, value in row.items():
+            print(f"  {key}: {type(value).__name__} = {value}")
 else:
     print("No hay usuarios en la tabla")
