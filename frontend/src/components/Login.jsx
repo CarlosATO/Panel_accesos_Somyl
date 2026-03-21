@@ -8,10 +8,10 @@ export default function Login({ setUser }) {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  // SOMYL CORPORATE IDENTITY
-  const brandCyan = '#00AEEF'
-  const brandNavy = '#002855' // Deep Navy
-  const brandDark = '#0f172a'
+  // DATIX CORPORATE IDENTITY - Nuevo tema púrpura
+  const brandPurple = '#a78bfa'   // Púrpura claro acento
+  const brandDark = '#2d1259'   // Dark purple (nav color)
+  const brandBg = '#3d1a6e'   // Fondo principal
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -50,44 +50,16 @@ export default function Login({ setUser }) {
     <div
       className="min-vh-100 d-flex align-items-center justify-content-center position-relative"
       style={{
-        // Fondo: Gradiente Corporativo Profesional (Navy to Dark)
-        background: `radial-gradient(circle at 50% 0%, ${brandNavy} 0%, ${brandDark} 100%)`,
+        background: `radial-gradient(ellipse at 60% 20%, #5b21b6 0%, #3d1a6e 45%, #1e0a3c 100%)`,
         width: '100%',
         overflow: 'hidden'
       }}
     >
-      {/* --- EFECTOS DE FONDO (RED DE FIBRA / CONECTIVIDAD) --- */}
+      {/* Puntos luminosos sobre fondo púrpura */}
+      <div style={{ position: 'absolute', top: '-15%', right: '-10%', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(167,139,250,0.15) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '-10%', left: '-5%', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)', filter: 'blur(80px)', pointerEvents: 'none' }} />
 
-      {/* Malla de red sutil */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: `
-            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px',
-          pointerEvents: 'none'
-        }}
-      />
-
-      {/* Destello Azul Somyl (Cyan) */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '-20%',
-          right: '-10%',
-          width: '600px',
-          height: '600px',
-          borderRadius: '50%',
-          background: `radial-gradient(circle, ${brandCyan}20 0%, transparent 70%)`,
-          filter: 'blur(60px)',
-          pointerEvents: 'none'
-        }}
-      />
-
-      {/* Puntos animados (Nodos de red) */}
+      {/* Puntos animados */}
       {[
         { top: '15%', left: '10%', delay: '0s' },
         { top: '80%', right: '15%', delay: '2s' },
@@ -97,14 +69,11 @@ export default function Login({ setUser }) {
           key={index}
           style={{
             position: 'absolute',
-            top: dot.top,
-            left: dot.left,
-            right: dot.right,
-            width: '4px',
-            height: '4px',
-            background: brandCyan,
+            top: dot.top, left: dot.left, right: dot.right,
+            width: '4px', height: '4px',
+            background: brandPurple,
             borderRadius: '50%',
-            boxShadow: `0 0 10px 2px ${brandCyan}`,
+            boxShadow: `0 0 10px 2px ${brandPurple}`,
             animation: `pulse 3s infinite ${dot.delay}`,
             opacity: 0.6
           }}
@@ -113,9 +82,10 @@ export default function Login({ setUser }) {
 
       <style>
         {`
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
           @keyframes pulse {
             0% { transform: scale(1); opacity: 0.4; }
-            50% { transform: scale(1.5); opacity: 1; box-shadow: 0 0 20px 4px ${brandCyan}60; }
+            50% { transform: scale(1.5); opacity: 1; box-shadow: 0 0 20px 4px ${brandPurple}60; }
             100% { transform: scale(1); opacity: 0.4; }
           }
         `}
@@ -136,32 +106,19 @@ export default function Login({ setUser }) {
         >
           {/* Header */}
           <div className="text-center pt-5 pb-2">
-            <div
-              style={{
-                width: '80px',
-                height: '80px',
-                background: 'white',
-                borderRadius: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 20px',
-                boxShadow: `0 0 30px ${brandCyan}40`,
-                padding: '12px'
-              }}
-            >
+            <div style={{ marginBottom: '24px' }}>
               <img
-                src="/logo-somyl.ico"
-                alt="Somyl S.A."
-                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                src="/logo_datix.png"
+                alt="DATIX SpA"
+                style={{ width: '220px', height: 'auto', margin: '0 auto', display: 'block' }}
               />
             </div>
 
             <h2 className="fw-bold text-white mb-1" style={{ fontSize: '24px', letterSpacing: '0.5px' }}>
-              Portal de Accesos
+              Acceso a Portal Somyl S.A.
             </h2>
             <p className="text-white-50 mb-0" style={{ fontSize: '14px', fontWeight: 300 }}>
-              Somyl servicios de Construcción e Ingeniería
+              Soluciones Tecnológicas Integrales
             </p>
           </div>
 
@@ -195,7 +152,7 @@ export default function Login({ setUser }) {
                   type="email"
                   className="form-control form-control-lg text-white"
                   id="email"
-                  placeholder="usuario@somyl.cl"
+                  placeholder="usuario@datix.cl"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -257,23 +214,27 @@ export default function Login({ setUser }) {
                 type="submit"
                 className="btn w-100 fw-bold py-3 text-white mt-2"
                 style={{
-                  background: brandCyan,
-                  border: 'none',
-                  borderRadius: '8px',
+                  background: `linear-gradient(135deg, #2d1259 0%, #1a0a40 100%)`,
+                  border: `1px solid rgba(167,139,250,0.35)`,
+                  borderRadius: '12px',
                   fontSize: '14px',
-                  letterSpacing: '0.5px',
-                  boxShadow: `0 4px 15px ${brandCyan}40`,
-                  transition: 'all 0.2s',
-                  textTransform: 'uppercase'
+                  letterSpacing: '1px',
+                  transition: 'all 0.3s ease',
+                  textTransform: 'uppercase',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                 }}
                 disabled={loading}
                 onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-1px)'
-                  e.target.style.boxShadow = `0 6px 20px ${brandCyan}60`
+                  e.target.style.transform = 'translateY(-2px)'
+                  e.target.style.borderColor = brandPurple
+                  e.target.style.boxShadow = `0 10px 20px -10px rgba(167,139,250,0.4)`
+                  e.target.style.background = `linear-gradient(135deg, #1a0a40 0%, #2d1259 100%)`
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.transform = 'translateY(0)'
-                  e.target.style.boxShadow = `0 4px 15px ${brandCyan}40`
+                  e.target.style.borderColor = `rgba(167,139,250,0.35)`
+                  e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)'
+                  e.target.style.background = `linear-gradient(135deg, #2d1259 0%, #1a0a40 100%)`
                 }}
               >
                 {loading ? 'Autenticando...' : 'Ingresar al Portal'}
@@ -282,14 +243,14 @@ export default function Login({ setUser }) {
           </div>
 
           <div className="text-center pb-4 pt-2 border-top border-secondary border-opacity-25 mx-4">
-            <small className="text-white-50" style={{ fontSize: '11px' }}>
-              Portal de Gestión Integral
+            <small className="text-white-50" style={{ fontSize: '11px', opacity: 0.6 }}>
+              Portal de Gestión Integral - DATIX
             </small>
           </div>
         </div>
 
-        <p className="text-center mt-4 text-white-50" style={{ fontSize: '12px', fontWeight: 300 }}>
-          &copy; {new Date().getFullYear()} Somyl S.A. | Ingeniería y Telecomunicaciones
+        <p className="text-center mt-4 text-white-50" style={{ fontSize: '9px', fontWeight: 700, opacity: 0.7, letterSpacing: '0.8px', whiteSpace: 'nowrap' }}>
+          &copy; 2026 SOLUCIONES TECNOLÓGICAS DATIX SPA | DE LA INFORMACIÓN AL ÉXITO
         </p>
       </div>
     </div>

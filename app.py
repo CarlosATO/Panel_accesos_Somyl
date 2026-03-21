@@ -1,13 +1,15 @@
 import os
 # jwt/bcrypt/datetime moved to API blueprints (auth/usuarios). Keep app.py small.
 from flask import Flask, request, redirect, url_for, session, flash, jsonify, send_from_directory, abort
-from supabase import create_client, Client
-from dotenv import load_dotenv
 from flask_cors import CORS
+from dotenv import load_dotenv
+from supabase import create_client, Client
+from utils import get_active_url
 
 # Importar blueprints
 from routes.usuarios import usuarios_bp
 from routes.auth import auth_bp
+from routes.billing import billing_bp
 import importlib
 import traceback
 
@@ -31,6 +33,8 @@ CORS(app, supports_credentials=True, origins=[
     'http://localhost:5173',  # Portal frontend dev
     'http://localhost:5174',  # Logística dev
     'http://localhost:5180',  # Construcción dev
+    'http://localhost:5177',  # Órdenes de Pago dev
+    'http://localhost:5176',  # Flota dev
     'https://produccionsomyl2026-production.up.railway.app',  # Construcción producción
 ])
 
@@ -132,11 +136,28 @@ def delete_user(user_id):
 # Registrar Blueprints (módulos separados)
 app.register_blueprint(auth_bp)
 app.register_blueprint(usuarios_bp)
+app.register_blueprint(billing_bp)
 if proyectos_bp:
     app.register_blueprint(proyectos_bp)
 else:
     print('⚠️ Blueprint proyectos no registrado (no disponible). Rutas /api/proyectos no estarán disponibles.')
 
+
+
+# Expose a small runtime config endpoint so frontends can discover correct
+# module URLs (local vs production) and link back to the correct environment.
+@app.route('/api/config')
+def api_config():
+    cfg = {
+        'env': os.getenv('APP_ENV', 'production'),
+        'SUPABASE_URL': os.getenv('SUPABASE_URL'),
+        'URL_CONSTRUCCION': get_active_url('URL_CONSTRUCCION'),
+        'URL_LOGISTICA': get_active_url('URL_LOGISTICA'),
+        'URL_RRHH': get_active_url('URL_RRHH'),
+        'URL_FLOTA': get_active_url('URL_FLOTA'),
+        'URL_ORDENES': get_active_url('URL_ORDENES'),
+    }
+    return jsonify(cfg)
 
 # SPA catch-all: serve index.html for any non-API path so the new React app
 # can handle client-side routes (this allows external apps to keep redirecting
@@ -163,5 +184,7 @@ def spa_catch_all(path):
     return "React build not found. Run `cd frontend && npm run build` and place the output in frontend/dist.", 500
 
 if __name__ == '__main__':
-    # Portal SSO usa puerto 5000 para evitar conflicto con módulo ordenes_pago (5001)
-    app.run(port=5000, debug=True)
+    # Portal SSO usa puerto 5000 para evitar conflicto con módulo ordenes_pago (5001).
+    # Sin embargo, en macOS el puerto 5000 suele estar ocupado por 'AirPlay Receiver'.
+    port = int(os.getenv("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)

@@ -1,42 +1,43 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-/* Aquí abajo seguirá el código CSS que ya tenías... */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── DATIX Design System ─────────────────────────────────────────── */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --purple-bg:    #3d1a6e;
+  --purple-nav:   #2d1259;
+  --purple-accent:#a78bfa;
+  --text-main:    #ffffff;
+  --text-dim:     rgba(255,255,255,0.45);
+  --border:       rgba(255,255,255,0.12);
+
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: dark;
-  color: #d4d4d8;
-  background-color: #0a0a0a;
-
+  color: var(--text-main);
+  background-color: var(--purple-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #0ea5e9;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #38bdf8;
-}
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #0a0a0a;
+  background-color: var(--purple-bg);
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+a {
+  font-weight: 500;
+  color: var(--purple-accent);
+  text-decoration: inherit;
 }
+a:hover { color: #c4b5fd; }
+
+h1 { font-size: 3.2em; line-height: 1.1; }
 
 button {
   border-radius: 8px;
@@ -49,10 +50,16 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
-button:hover {
-  border-color: #0ea5e9;
-}
-button:focus,
-button:focus-visible {
+button:focus, button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+
+/* Scrollbar global */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* Bootstrap overrides — tabla en tema oscuro */
+.table { color: var(--text-main); }
+.table > :not(caption) > * > * { background-color: transparent; }

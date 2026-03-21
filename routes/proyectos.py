@@ -3,6 +3,7 @@ from supabase import create_client, Client
 import os
 import jwt
 from dotenv import load_dotenv
+from utils import require_active_subscription
 
 load_dotenv()
 
@@ -64,6 +65,7 @@ def get_authenticated_user():
 # --- RUTAS DE LECTURA ---
 
 @proyectos_bp.route('/api/proyectos', methods=['GET'])
+@require_active_subscription
 def obtener_proyectos():
     try:
         user = get_authenticated_user()
@@ -117,6 +119,7 @@ def obtener_proyectos():
         return jsonify({'error': str(e)}), 500
 
 @proyectos_bp.route('/api/mis-accesos/<string:user_id>', methods=['GET'])
+@require_active_subscription
 def obtener_mis_accesos(user_id):
     """
     Obtiene los IDs de proyectos permitidos para un usuario específico.
@@ -144,6 +147,7 @@ def obtener_mis_accesos(user_id):
 # --- NUEVA RUTA DE ESCRITURA (ADMINISTRACIÓN) ---
 
 @proyectos_bp.route('/api/admin/asignar-proyectos', methods=['POST'])
+@require_active_subscription
 def asignar_proyectos_usuario():
     """
     Guarda la lista de proyectos permitidos para un usuario.

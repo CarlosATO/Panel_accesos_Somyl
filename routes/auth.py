@@ -7,6 +7,7 @@ import bcrypt
 import jwt
 import datetime
 import os
+from utils import get_active_url
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api')
 # Deshabilitar strict_slashes para evitar errores 404 con/sin slash final
@@ -63,7 +64,7 @@ def login():
                     'herramientas': user['rol_herramientas'],
                     'rrhh': user.get('rol_rrhh', 'false')
                 },
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=8)
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2)
             }
             token = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
             
@@ -79,9 +80,10 @@ def dashboard():
     if 'user_email' not in session:
         return jsonify({'error': 'No autorizado'}), 401
     
-    # Refresh current user from DB to pick up changes to is_superuser
+    # Refresh current user
     sb = get_supabase_client()
     db_resp = sb.table('usuarios_sso').select('*').eq('email', session.get('user_email')).execute()
+    
     if db_resp.data:
         user = db_resp.data[0]
         # update session with latest data
@@ -111,16 +113,16 @@ def dashboard():
             'produccion': user.get('rol_produccion', 'false'),  # ✅ Agregar rol producción
             'rrhh': user.get('rol_rrhh', 'false')
         },
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=8)
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2)
     }
     token_sso = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
     
-    # 1. Leemos las variables. Si no existen, por seguridad usamos localhost
-    url_logistica = os.getenv("URL_LOGISTICA", "http://localhost:5160")
-    url_flota = os.getenv("URL_FLOTA", "http://localhost:5176") # Changed default to 5176 to avoid conflict
-    url_rrhh = os.getenv("URL_RRHH", "https://rrhhsomyl2026-production.up.railway.app")
-    url_construccion = os.getenv("URL_CONSTRUCCION", os.getenv("URL_PRODUCCION", "http://localhost:5180"))
-    url_ordenes = os.getenv("URL_ORDENES", "https://pagos.datix.cl/sso/login")
+    # 1. Leemos las variables usando el helper para soportar overrides locales
+    url_logistica = get_active_url("URL_LOGISTICA") or "http://localhost:5174"
+    url_flota = get_active_url("URL_FLOTA") or "http://localhost:5176" 
+    url_rrhh = get_active_url("URL_RRHH") or "https://rrhhsomyl2026-production.up.railway.app"
+    url_construccion = get_active_url("URL_CONSTRUCCION") or get_active_url("URL_PRODUCCION") or "http://localhost:5180"
+    url_ordenes = get_active_url("URL_ORDENES") or "https://pagos.datix.cl/sso/login"
     
     # Helper para unir URL y params correctamente
     def make_sso_url(base_url, token):
@@ -133,9 +135,6 @@ def dashboard():
         'herramientas': f"https://herramientas.datix.cl/sso/login?token={token_sso}",
         
         # 2. Usamos las variables dinámicas para módulos locales
-        # Para módulos locales mantenemos el comportamiento específico:
-        # - Flota: volver al endpoint /sso/login (necesario para la integración existente)
-        # - Logística: SPA que recibe token en la raíz
         'flota': f"{url_flota}/sso/login?token={token_sso}",
         'logistica': f"{url_logistica}/?token={token_sso}",
         'rrhh': f"{url_rrhh}/?token={token_sso}",
@@ -146,7 +145,40 @@ def dashboard():
         'produccion': f"{url_construccion}/?token={token_sso}"
     }
     
-    return jsonify({'user': user, 'links': links})
+    # Obtener estado de suscripción si SaaS está habilitado
+    subscription = None
+    saas_enabled = os.getenv('SaaS_ENABLED', 'false').lower() == 'true'
+    
+    # MODO TEST: Forzar suscripción vencida para pruebas
+    saas_test_expired = os.getenv('SaaS_TEST_EXPIRED', 'false').lower() == 'true'
+    
+    if saas_enabled:
+        if saas_test_expired:
+            # Modo prueba: simular suscripción vencida
+            subscription = {'status': 'inactive', 'test_mode': True}
+        else:
+            try:
+                user_rut = user.get('empresa_rut', '76.693.850-3')
+                resp = sb.table('empresa_suscripciones').select('*').eq('rut_empresa', user_rut).execute()
+                if resp.data:
+                    suscripcion = resp.data[0]
+                    subscription = {
+                        'status': 'active' if suscripcion.get('estado') == 'ACTIVA' else 'inactive',
+                        'estado': suscripcion.get('estado'),
+                        'expiry_date': suscripcion.get('fecha_vencimiento')
+                    }
+                else:
+                    subscription = {'status': 'inactive'}
+            except Exception as e:
+                print(f"Error obteniendo suscripción: {e}")
+                subscription = {'status': 'inactive'}
+    
+    return jsonify({
+        'user': user, 
+        'links': links,
+        'subscription': subscription,
+        'saas_enabled': saas_enabled
+    })
 
 @auth_bp.route('/logout', methods=['POST'])
 def logout():

@@ -5,6 +5,7 @@ Contiene todos los endpoints API para CRUD de usuarios
 from flask import Blueprint, request, session, jsonify
 import bcrypt
 from supabase import Client
+from utils import require_active_subscription
 
 usuarios_bp = Blueprint('usuarios', __name__, url_prefix='/api/admin')
 
@@ -27,6 +28,7 @@ def _current_user_db(session_email: str, sb: Client):
     return None
 
 @usuarios_bp.route('/users', methods=['GET'])
+@require_active_subscription
 def listar_usuarios():
     """Listar todos los usuarios del sistema"""
     # Verify the caller is a superuser using fresh DB data (avoid stale sessions)
@@ -43,6 +45,7 @@ def listar_usuarios():
         return jsonify({'error': str(e)}), 500
 
 @usuarios_bp.route('/users', methods=['POST'])
+@require_active_subscription
 def crear_usuario():
     """Crear un nuevo usuario"""
     # Verify caller of create is superuser using fresh DB data
@@ -78,6 +81,7 @@ def crear_usuario():
             'password_hash': password_hash,
             # Persist only is_superuser; avoid writing rol_admin to prevent errors
             'is_superuser': is_super,
+            'is_billing_admin': bool(roles.get('billing', False)),  # Nuevo: Gestor de facturación
             'rol_ordenes': roles.get('ordenes', 'false'),
             'rol_fibra': roles.get('fibra', 'false'),
             'rol_flota': roles.get('flota', 'false'),
@@ -95,6 +99,7 @@ def crear_usuario():
         return jsonify({'error': str(e)}), 500
 
 @usuarios_bp.route('/users/<user_id>', methods=['PUT'])
+@require_active_subscription
 def actualizar_usuario(user_id):
     """Actualizar un usuario existente"""
     # Verify caller of update is superuser using fresh DB data
@@ -115,6 +120,7 @@ def actualizar_usuario(user_id):
         update_data = {
             'email': email,
             'is_superuser': bool(roles.get('admin', False)),
+            'is_billing_admin': bool(roles.get('billing', False)),  # Nuevo: Gestor de facturación
             'rol_ordenes': roles.get('ordenes', 'false'),
                 'rol_fibra': roles.get('fibra', 'false'),
                 'rol_flota': roles.get('flota', 'false'),
@@ -142,6 +148,7 @@ def actualizar_usuario(user_id):
         return jsonify({'error': str(e)}), 500
 
 @usuarios_bp.route('/users/<user_id>', methods=['DELETE'])
+@require_active_subscription
 def eliminar_usuario(user_id):
     """Eliminar un usuario"""
     # Verify caller of delete is superuser using fresh DB data
