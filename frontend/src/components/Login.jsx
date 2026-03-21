@@ -105,8 +105,8 @@ export default function Login({ setUser }) {
           }}
         >
           {/* Header */}
-          <div className="text-center pt-5 pb-2">
-            <div style={{ marginBottom: '24px' }}>
+          <div className="text-center pt-4 pb-2">
+            <div style={{ marginBottom: '16px' }}>
               <img
                 src="/logo_datix.png"
                 alt="DATIX SpA"
