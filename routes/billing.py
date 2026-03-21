@@ -68,7 +68,7 @@ def get_billing_status():
     
     try:
         user_data = session.get('user_data', {})
-        user_rut = user_data.get('rut_empresa', '')
+        user_rut = user_data.get('rut_empresa') or user_data.get('empresa_rut') or '96.511.940-0'
         
         # Si no hay RUT, retornar estado por defecto sin error
         if not user_rut:
@@ -92,9 +92,18 @@ def get_billing_status():
         
         suscripcion = resp.data[0]
         estado = suscripcion.get('estado', 'PENDIENTE')
+        has_subscription = (estado == 'ACTIVA')
         
+        if not has_subscription:
+            return jsonify({
+                'has_subscription': False,
+                'status': estado,
+                'locked': True,
+                'message': f'Suscripción {estado}'
+            }), 403
+            
         return jsonify({
-            'has_subscription': estado == 'ACTIVA',
+            'has_subscription': True,
             'status': estado,
             'expiry_date': suscripcion.get('fecha_vencimiento'),
             'mp_preference_id': suscripcion.get('mp_preference_id')

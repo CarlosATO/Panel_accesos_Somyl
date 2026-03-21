@@ -18,7 +18,7 @@ if not url or not key:
 supabase = create_client(url, key)
 
 # Obtener un usuario de ejemplo para ver las columnas
-response = supabase.table('usuarios_sso').select('*').limit(1).execute()
+response = supabase.table('empresa_suscripciones').select("*").limit(1).execute()
 
 if response.data:
     user = response.data[0]

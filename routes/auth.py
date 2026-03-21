@@ -158,7 +158,7 @@ def dashboard():
             subscription = {'status': 'inactive', 'test_mode': True}
         else:
             try:
-                user_rut = user.get('empresa_rut', '76.693.850-3')
+                user_rut = user.get('rut_empresa') or user.get('empresa_rut') or '96.511.940-0'
                 resp = sb.table('empresa_suscripciones').select('*').eq('rut_empresa', user_rut).execute()
                 if resp.data:
                     suscripcion = resp.data[0]
