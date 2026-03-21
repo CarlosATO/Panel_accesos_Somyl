@@ -163,8 +163,8 @@ export default function Login({ setUser }) {
                     color: 'white'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = brandCyan
-                    e.target.style.boxShadow = `0 0 0 2px ${brandCyan}30`
+                    e.target.style.borderColor = brandPurple
+                    e.target.style.boxShadow = `0 0 0 2px ${brandPurple}30`
                     e.target.style.background = 'rgba(0, 0, 0, 0.4)'
                   }}
                   onBlur={(e) => {
@@ -198,8 +198,8 @@ export default function Login({ setUser }) {
                     color: 'white'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = brandCyan
-                    e.target.style.boxShadow = `0 0 0 2px ${brandCyan}30`
+                    e.target.style.borderColor = brandPurple
+                    e.target.style.boxShadow = `0 0 0 2px ${brandPurple}30`
                     e.target.style.background = 'rgba(0, 0, 0, 0.4)'
                   }}
                   onBlur={(e) => {
