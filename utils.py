@@ -70,22 +70,14 @@ def require_active_subscription(f):
         
         try:
             sb = current_app.config['SUPABASE_CLIENT']
-            user_rut = get_user_rut_from_session()
             
-            # Consultar estado de suscripción
-            resp = sb.table('empresa_suscripciones').select('*').eq('rut_empresa', user_rut).execute()
+            # Consultar estado de suscripción global (single-tenant)
+            resp = sb.table('empresa_suscripciones').select('*').order('updated_at', desc=True).limit(1).execute()
             
             if not resp.data:
-                # No existe registro de suscripción - crear uno pendiente y bloquear
-                sb.table('empresa_suscripciones').insert({
-                    'rut_empresa': user_rut,
-                    'estado': 'PENDIENTE'
-                }).execute()
-                
-                return jsonify({
-                    'locked': True,
-                    'message': 'Pago requerido'
-                }), 403
+                # No existe registro de suscripción - En modo single-tenant, permitimos
+                # el acceso si no hay configuración, tal como se hace en billing.py
+                return f(*args, **kwargs)
             
             suscripcion = resp.data[0]
             estado = suscripcion.get('estado', 'PENDIENTE')
@@ -107,7 +99,7 @@ def require_active_subscription(f):
                         # Expirada - cambiar estado a PENDIENTE
                         sb.table('empresa_suscripciones').update({
                             'estado': 'PENDIENTE'
-                        }).eq('rut_empresa', user_rut).execute()
+                        }).eq('id', suscripcion.get('id')).execute()
                         
                         return jsonify({
                             'locked': True,
