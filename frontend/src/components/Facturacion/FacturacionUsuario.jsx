@@ -36,28 +36,51 @@ function FacturacionUsuario({ user, onLogout }) {
   const opcionesPago = [
     {
       id: 'LIQUIDACION',
-      nombre: 'Directo por liquidación de Sueldo',
+      nombre: 'Licencia Interna (Sueldo)',
       monto: 500000,
-      moneda: 'CLP',
-      descripcion: 'Se debe agregar  mensualmente  como empleado de SOMYL',
-      icono: '💰'
+      moneda: 'Mensual (CLP)',
+      beneficios: [
+        { texto: 'Uso continuo del sistema', tipo: 'pro' },
+        { texto: 'Soporte técnico prioritario', tipo: 'pro' },
+        { texto: 'Nuevas implementaciones incluidas', tipo: 'pro' },
+        { texto: 'Propiedad intelectual se mantiene en Datix', tipo: 'con' }
+      ],
+      icono: '👨‍💻',
+      solicitable: true,
+      textoBoton: 'Elegir Anexo de Contrato',
+      destacado: false
     },
     {
       id: 'FACTURA_ELECTRONICA',
-      nombre: 'Factura Electrónica',
+      nombre: 'Licencia Externa B2B',
       monto: '15 UF',
-      moneda: '+ IVA (~$733.000)',
-      descripcion: 'Factura electrónica. Solicita el trámite con nosotros.',
+      moneda: 'Mensual (+ IVA)',
+      beneficios: [
+        { texto: 'Facturación formal B2B (Datix SpA)', tipo: 'pro' },
+        { texto: 'Uso continuo del sistema', tipo: 'pro' },
+        { texto: 'Soporte técnico básico', tipo: 'pro' },
+        { texto: 'Nuevas implementaciones NO incluidas', tipo: 'con' }
+      ],
       icono: '📄',
-      solicitable: true
+      solicitable: true,
+      textoBoton: 'Elegir Contrato B2B',
+      destacado: false
     },
     {
-      id: 'TRANSFERENCIA',
-      nombre: 'Transferencia Bancaria',
-      monto: 500000,
-      moneda: 'CLP',
-      descripcion: 'Transferencia directa a cuenta de Carlos Alegria, sin factura',
-      icono: '🏦'
+      id: 'VENTA_SOFTWARE',
+      nombre: 'Adquisición Total del Sistema',
+      monto: 7800000,
+      moneda: 'Pago Único (CLP)',
+      beneficios: [
+        { texto: 'Traspaso legal de Propiedad Intelectual', tipo: 'pro' },
+        { texto: 'Entrega de Código Fuente y BBDD', tipo: 'pro' },
+        { texto: 'Sistema en propiedad absoluta (Cero amarras)', tipo: 'pro' },
+        { texto: 'Soporte de transición limitado (3 meses, sin mejoras)', tipo: 'con' }
+      ],
+      icono: '🤝',
+      solicitable: true,
+      textoBoton: 'Solicitar Traspaso Legal',
+      destacado: false
     }
   ]
 
@@ -226,7 +249,7 @@ function FacturacionUsuario({ user, onLogout }) {
             {opcionesPago.map((opcion) => (
               <div key={opcion.id} style={{
                 backgroundColor: COLORS.cardOn,
-                border: '1px solid ' + COLORS.border,
+                border: opcion.destacado ? `2px solid ${COLORS.accent}` : '1px solid ' + COLORS.border,
                 borderRadius: '20px',
                 padding: '32px',
                 flex: '1',
@@ -238,19 +261,35 @@ function FacturacionUsuario({ user, onLogout }) {
                 textAlign: 'center',
                 position: 'relative',
                 transition: 'transform 0.2s, box-shadow 0.2s',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+                boxShadow: opcion.destacado ? '0 4px 25px rgba(167, 139, 250, 0.2)' : '0 4px 20px rgba(0,0,0,0.2)'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-5px)'
-                e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.3)'
-                e.currentTarget.style.borderColor = COLORS.accent
+                e.currentTarget.style.boxShadow = opcion.destacado ? '0 12px 35px rgba(167, 139, 250, 0.4)' : '0 12px 30px rgba(0,0,0,0.3)'
+                if(!opcion.destacado) e.currentTarget.style.borderColor = COLORS.accent
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)'
-                e.currentTarget.style.borderColor = COLORS.border
+                e.currentTarget.style.boxShadow = opcion.destacado ? '0 4px 25px rgba(167, 139, 250, 0.2)' : '0 4px 20px rgba(0,0,0,0.2)'
+                if(!opcion.destacado) e.currentTarget.style.borderColor = COLORS.border
               }}
               >
+                {opcion.destacado && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '-12px',
+                    backgroundColor: COLORS.accent,
+                    color: COLORS.bg,
+                    padding: '4px 16px',
+                    borderRadius: '20px',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px'
+                  }}>
+                    Opción Oro / Independencia
+                  </div>
+                )}
                 {/* Header */}
                 <div style={{ 
                   fontSize: '48px', 
@@ -290,16 +329,36 @@ function FacturacionUsuario({ user, onLogout }) {
                   marginBottom: '25px' 
                 }} />
                 
-                {/* Description */}
-                <p style={{ 
-                  color: COLORS.textDim, 
-                  fontSize: '15px', 
-                  lineHeight: '1.6', 
+                {/* Beneficios (Pricing Table style) */}
+                <div style={{ 
+                  width: '100%',
                   marginBottom: '30px',
-                  flex: 1 
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
                 }}>
-                  {opcion.descripcion}
-                </p>
+                  {opcion.beneficios?.map((b, i) => (
+                    <div key={i} style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '10px',
+                      textAlign: 'left',
+                      fontSize: '14px',
+                      color: b.tipo === 'pro' ? COLORS.text : COLORS.textDim,
+                      lineHeight: '1.4'
+                    }}>
+                      <span style={{ 
+                        color: b.tipo === 'pro' ? COLORS.success : COLORS.danger,
+                        marginTop: '2px',
+                        fontSize: '16px'
+                      }}>
+                        {b.tipo === 'pro' ? '✔️' : '➖'}
+                      </span>
+                      <span>{b.texto}</span>
+                    </div>
+                  ))}
+                </div>
 
                 {/* Button */}
                 {opcion.solicitable ? (
@@ -328,7 +387,7 @@ function FacturacionUsuario({ user, onLogout }) {
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
                     onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                   >
-                    <Send size={18} /> Solicitar Factura
+                    <Send size={18} /> {opcion.textoBoton || 'Seleccionar'}
                   </button>
                 ) : (
                   <div style={{
@@ -448,10 +507,14 @@ function FacturacionUsuario({ user, onLogout }) {
 
             <div style={{ marginBottom: '20px' }}>
               <p style={{ color: COLORS.textDim, marginBottom: '10px' }}>
-                Estás a punto de solicitar una facturación electrónica.
+                {selectedTipo === 'VENTA_SOFTWARE' 
+                  ? 'Estás a punto de solicitar el inicio de los trámites legales para ceder la Propiedad Intelectual y el código fuente del sistema a favor de SOMYL.'
+                  : selectedTipo === 'LIQUIDACION'
+                  ? 'Estás a punto de solicitar formalizar el pago de licencia mediante Anexo de Contrato Labaral.'
+                  : 'Estás a punto de solicitar formalizar una licencia mensual vía Facturación B2B (Empresa).'}
               </p>
               <p style={{ color: COLORS.textDim, marginBottom: '15px' }}>
-                <strong>Se contactarán contigo a través de email para coordinar.</strong>
+                <strong>Me contactaré directamente para formalizar esta transición.</strong>
               </p>
               <div style={{
                 backgroundColor: COLORS.cardOff,
