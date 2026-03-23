@@ -83,32 +83,12 @@ def obtener_proyectos():
         rol_produccion = str(user.get('rol_produccion', 'false')).lower().strip()
         es_superuser = bool(user.get('is_superuser', False))
 
-        # 2. ESCENARIO ADMIN O SUPERUSUARIO (Ven Todo)
-        if es_superuser or rol_produccion == 'admin':
+        # 2. ESCENARIO CON ACCESO (Ven Todo)
+        if es_superuser or rol_produccion in ['admin', 'true', 'usuario', 'user']:
             response = supabase_proyectos.table('proyectos')\
                 .select('*')\
                 .order('proyecto', desc=True)\
                 .execute()
-            return jsonify(response.data), 200
-
-        # 3. ESCENARIO USUARIO NORMAL (Filtro por Tabla)
-        elif rol_produccion in ['true', 'usuario', 'user']:
-            permisos = supabase_proyectos.table('prod_acceso_proyectos')\
-                .select('proyecto_id')\
-                .eq('user_id', user_id)\
-                .execute()
-            
-            ids_permitidos = [item['proyecto_id'] for item in permisos.data]
-
-            if not ids_permitidos:
-                return jsonify([]), 200
-
-            response = supabase_proyectos.table('proyectos')\
-                .select('*')\
-                .in_('id', ids_permitidos)\
-                .order('proyecto', desc=True)\
-                .execute()
-            
             return jsonify(response.data), 200
 
         else:
