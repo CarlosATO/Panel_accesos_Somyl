@@ -42,7 +42,7 @@ function ChangePasswordModal({ onClose }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           current_password: currentPassword,
-          new_password: new_password
+          new_password: newPassword
         }),
         credentials: 'include'
       })
