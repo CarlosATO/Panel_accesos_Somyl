@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom'
-import { LogOut, Bell, HelpCircle } from 'lucide-react'
+import { LogOut, Bell, HelpCircle, Key } from 'lucide-react'
 import AlertasBox from './Facturacion/AlertasBox'
+import { useState } from 'react'
+import ChangePasswordModal from './ChangePasswordModal'
 
 const COLORS = {
   navBg: '#2d1259',
@@ -12,6 +14,7 @@ const COLORS = {
 
 function Navbar({ user, currentTab = 'inicio', onLogout }) {
   const navigate = useNavigate()
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
 
   const tabs = [
     { key: 'inicio', label: 'Inicio', path: '/' }
@@ -152,7 +155,33 @@ function Navbar({ user, currentTab = 'inicio', onLogout }) {
           <LogOut size={14} strokeWidth={2} />
           <span>Cerrar Sesión</span>
         </button>
+
+        {/* Botón Cambiar Clave (Ícono) */}
+        <button
+          onClick={() => setShowPasswordModal(true)}
+          title="Cambiar Contraseña"
+          style={{
+            background: 'rgba(167, 139, 250, 0.1)',
+            border: `1px solid ${COLORS.accent}`,
+            color: COLORS.accent,
+            cursor: 'pointer',
+            padding: '8px',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(167, 139, 250, 0.2)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(167, 139, 250, 0.1)' }}
+        >
+          <Key size={16} strokeWidth={2} />
+        </button>
       </div>
+
+      {showPasswordModal && (
+        <ChangePasswordModal onClose={() => setShowPasswordModal(false)} />
+      )}
     </nav>
   )
 }

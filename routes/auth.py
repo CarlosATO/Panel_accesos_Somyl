@@ -185,3 +185,46 @@ def logout():
     """Cerrar sesión del usuario"""
     session.clear()
     return jsonify({'message': 'Sesión cerrada exitosamente'})
+
+@auth_bp.route('/profile/change-password', methods=['POST'], strict_slashes=False)
+def change_password():
+    """Permitir que el usuario logueado cambie su propia contraseña"""
+    if 'user_email' not in session:
+        return jsonify({'error': 'No autorizado'}), 401
+    
+    data = request.get_json()
+    current_password = data.get('current_password')
+    new_password = data.get('new_password')
+    
+    if not current_password or not new_password:
+        return jsonify({'error': 'Contraseña actual y nueva requeridas'}), 400
+    
+    if len(new_password) < 6:
+        return jsonify({'error': 'La nueva contraseña debe tener al menos 6 caracteres'}), 400
+        
+    try:
+        sb = get_supabase_client()
+        email = session['user_email']
+        
+        # Obtener usuario de la base de datos
+        response = sb.table('usuarios_sso').select("*").eq('email', email).execute()
+        
+        if not response.data:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
+            
+        user = response.data[0]
+        
+        # Verificar contraseña actual
+        if not bcrypt.checkpw(current_password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+            return jsonify({'error': 'La contraseña actual es incorrecta'}), 401
+            
+        # Hashear la nueva contraseña
+        new_password_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        # Actualizar en la base de datos
+        sb.table('usuarios_sso').update({'password_hash': new_password_hash}).eq('email', email).execute()
+        
+        return jsonify({'message': 'Contraseña cambiada exitosamente'})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
